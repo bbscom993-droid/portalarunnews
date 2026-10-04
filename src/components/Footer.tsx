@@ -22,6 +22,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { Category, SiteSettings } from '../types';
+import { ModernGraffitiLogo } from './ModernGraffitiLogo';
 
 interface FooterProps {
   categories: Category[];
@@ -91,18 +92,15 @@ export const Footer: React.FC<FooterProps> = ({
           
           {/* Brand Info (2 cols on lg) */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-yellow-400 flex items-center justify-center shadow-xs">
-                <span className="text-sky-950 font-black text-lg">A</span>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-yellow-400 flex items-center justify-center shadow-xs border-2 border-yellow-300 flex-shrink-0">
+                <span className="text-sky-950 font-black text-xl font-graffiti">A</span>
               </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-1 leading-none font-brand font-extrabold text-xl tracking-wider">
-                  <span className="text-white">ARUN NEWS</span>
-                </div>
-                <span className="text-[10px] text-sky-300 font-bold uppercase tracking-widest mt-0.5 font-brand">
-                  {siteSettings?.portalTagline || 'Jembatan Informasi Nusantara'}
-                </span>
-              </div>
+              <ModernGraffitiLogo 
+                size="md" 
+                customText={siteSettings?.portalName || 'ARUN NEWS'}
+                tagline={siteSettings?.portalTagline || 'Jembatan Informasi Nusantara'}
+              />
             </div>
 
             <p className="text-sky-300 leading-relaxed text-xs font-medium">
@@ -368,10 +366,10 @@ export const Footer: React.FC<FooterProps> = ({
           <div>
             © 2026 {siteSettings?.portalName || 'Arun News'}. Hak Cipta Dilindungi Undang-Undang Republik Indonesia.
           </div>
-          <div className="flex items-center gap-4 font-mono font-medium">
-            <span className="text-yellow-400">Jembatan Informasi Nusantara</span>
+          <div className="flex items-center gap-4 text-xs font-mono font-medium">
+            <span className="font-graffiti tracking-wider text-yellow-400 graffiti-tagline uppercase">Jembatan Informasi Nusantara</span>
             <span>•</span>
-            <span>Edisi Digital Nusantara</span>
+            <span className="text-sky-300">Edisi Digital Nusantara</span>
           </div>
         </div>
       </div>

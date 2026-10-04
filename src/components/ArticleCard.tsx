@@ -19,6 +19,7 @@ import { motion } from 'motion/react';
 import { NewsArticle } from '../types';
 import { analyzeArticleSentiment } from '../utils/sentimentEngine';
 import { getArticleReadingTime } from '../utils/readingTime';
+import { ArticleMiniPodcast } from './ArticleMiniPodcast';
 
 interface SocialShareProps {
   article: NewsArticle;
@@ -175,18 +176,20 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
       <motion.article
         id={`article-card-compact-${article.id}`}
         onClick={() => onSelectArticle(article)}
-        className="group bg-white rounded-xl p-3 border border-sky-200 hover:border-yellow-400 hover:shadow-md transition-all duration-300 cursor-pointer flex items-center justify-between gap-3 relative overflow-hidden"
+        className="group bg-white rounded-xl p-3 border border-sky-200 hover:border-yellow-400 hover:shadow-xl hover:shadow-sky-950/5 hover:-translate-y-1 active:scale-[0.99] transition-all duration-300 ease-out cursor-pointer flex items-center justify-between gap-3 relative overflow-hidden"
         initial={{ opacity: 0, y: 10 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-10px" }}
       >
         <div className="flex items-center gap-3 min-w-0 flex-1">
-          <img
-            src={article.imageUrl}
-            alt={article.title}
-            referrerPolicy="no-referrer"
-            className="w-14 h-14 rounded-lg object-cover flex-shrink-0 border border-sky-200"
-          />
+          <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 border border-sky-200 group-hover:border-yellow-400 transition-colors">
+            <img
+              src={article.imageUrl}
+              alt={article.title}
+              referrerPolicy="no-referrer"
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
+            />
+          </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 mb-0.5">
               <span className="text-[10px] font-black uppercase text-sky-800 tracking-wider">
@@ -224,6 +227,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
           </div>
         </div>
         <div className="flex items-center gap-1.5 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+          <ArticleMiniPodcast article={article} variant="compact" />
           <SocialShareGroup article={article} variant="compact" />
         </div>
         <ArrowUpRight className="w-4 h-4 text-sky-600 group-hover:text-yellow-600 flex-shrink-0" />
@@ -246,7 +250,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
       <motion.article
         id={`article-card-horiz-${article.id}`}
         onClick={() => onSelectArticle(article)}
-        className="group bg-white rounded-2xl p-4 sm:p-5 border border-sky-200 hover:border-yellow-400 hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col sm:flex-row gap-4 items-start relative overflow-hidden"
+        className="group bg-white rounded-2xl p-4 sm:p-5 border border-sky-200 hover:border-yellow-400 hover:shadow-xl hover:shadow-sky-950/8 hover:-translate-y-1.5 active:scale-[0.99] transition-all duration-300 ease-out cursor-pointer flex flex-col sm:flex-row gap-4 items-start relative overflow-hidden"
         initial={{ opacity: 0, y: 15 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-20px" }}
@@ -257,7 +261,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
             src={article.imageUrl}
             alt={article.title}
             referrerPolicy="no-referrer"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500 ease-out"
           />
           <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-10">
             <span className="bg-sky-900 text-white font-black text-[10px] px-2.5 py-0.5 rounded-md shadow-xs uppercase tracking-wider border border-sky-700">
@@ -312,6 +316,9 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
             <p className="text-xs sm:text-sm text-slate-600 line-clamp-2 leading-relaxed mb-2 font-medium">
               {article.excerpt}
             </p>
+
+            {/* Mini Audio Player Podcast */}
+            <ArticleMiniPodcast article={article} variant="card" />
 
             {/* Visual Progress Bar Strip in Body */}
             {effectiveProgress > 0 && (
@@ -380,7 +387,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
     <motion.article
       id={`article-card-${article.id}`}
       onClick={() => onSelectArticle(article)}
-      className="group bg-white rounded-2xl overflow-hidden border border-sky-200 hover:border-yellow-400 hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col justify-between relative"
+      className="group bg-white rounded-2xl overflow-hidden border border-sky-200 hover:border-yellow-400 hover:shadow-2xl hover:shadow-sky-950/10 hover:-translate-y-1.5 active:scale-[0.99] transition-all duration-300 ease-out cursor-pointer flex flex-col justify-between relative"
       initial={{ opacity: 0, y: 15 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-20px" }}
@@ -392,7 +399,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
           src={article.imageUrl}
           alt={article.title}
           referrerPolicy="no-referrer"
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+          className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500 ease-out"
         />
         
         {/* Category tag & hot badge */}
@@ -492,6 +499,9 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
           <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed mb-2 font-medium">
             {article.excerpt}
           </p>
+
+          {/* Mini Audio Player Podcast */}
+          <ArticleMiniPodcast article={article} variant="card" />
 
           {/* Visual Strip Progress Indicator in Card Body */}
           {effectiveProgress > 0 && (

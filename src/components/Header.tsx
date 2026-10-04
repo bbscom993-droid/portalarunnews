@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Search, 
   Bookmark, 
@@ -24,9 +24,12 @@ import {
   Train,
   Tag,
   Megaphone,
-  Minimize2
+  Minimize2,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { Category, SiteSettings } from '../types';
+import { ModernGraffitiLogo } from './ModernGraffitiLogo';
 
 interface HeaderProps {
   categories: Category[];
@@ -82,6 +85,31 @@ export const Header: React.FC<HeaderProps> = ({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
 
+  // Global Theme Mode (Light / Dark) with localStorage persistence
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('arun_news_theme');
+      if (saved === 'dark' || saved === 'light') return saved;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      localStorage.setItem('arun_news_theme', theme);
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
   const quickSearchTags = ['Timnas', 'Ekonomi', 'Satelit', 'Smart Farming', 'IKN', 'Batik Paris'];
 
   return (
@@ -118,16 +146,12 @@ export const Header: React.FC<HeaderProps> = ({
                 className="w-11 h-11 sm:w-13 sm:h-13 rounded-full object-contain shadow-md border-2 border-yellow-400 bg-white group-hover:scale-105 transition-transform"
               />
 
-              {/* Logo Wordmark */}
-              <div className="flex flex-col">
-                <div className="flex items-center gap-1 leading-none">
-                  <span className="text-xl sm:text-2xl font-brand font-black uppercase tracking-wider text-white">{siteSettings?.portalName || 'Arun News'}</span>
-                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-yellow-400 animate-pulse" />
-                </div>
-                <span className="text-[10px] font-extrabold text-sky-200 uppercase tracking-wider mt-0.5 font-brand">
-                  {siteSettings?.portalTagline || 'Jembatan Informasi Nusantara'}
-                </span>
-              </div>
+              {/* Modern Graffiti Logo Wordmark */}
+              <ModernGraffitiLogo 
+                size="md" 
+                customText={siteSettings?.portalName || 'ARUN NEWS'}
+                tagline={siteSettings?.portalTagline || 'Jembatan Informasi Nusantara'}
+              />
             </a>
           </div>
 
@@ -242,6 +266,28 @@ export const Header: React.FC<HeaderProps> = ({
                 </span>
               </button>
             )}
+
+            {/* Global Theme Toggle Button (Light / Dark Mode) */}
+            <button
+              id="header-theme-toggle-btn"
+              type="button"
+              onClick={toggleTheme}
+              className="p-2 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-bold text-sky-950 bg-white hover:bg-yellow-50 border border-yellow-400/80 hover:border-yellow-400 transition-all shadow-xs cursor-pointer active:scale-95 flex items-center justify-center gap-1.5 group"
+              title={theme === 'dark' ? 'Ganti ke Mode Terang (Light Mode)' : 'Ganti ke Mode Gelap (Dark Mode)'}
+              aria-label="Toggle Mode Gelap atau Terang"
+            >
+              {theme === 'dark' ? (
+                <>
+                  <Sun className="w-4 h-4 text-amber-500 fill-amber-400/50 group-hover:rotate-45 transition-transform" />
+                  <span className="hidden xl:inline text-[11px] text-amber-800 font-bold">Terang</span>
+                </>
+              ) : (
+                <>
+                  <Moon className="w-4 h-4 text-sky-700 fill-sky-200 group-hover:-rotate-12 transition-transform" />
+                  <span className="hidden xl:inline text-[11px] text-sky-800 font-bold">Gelap</span>
+                </>
+              )}
+            </button>
 
             {/* Bookmarks Counter Button - Responsive on Mobile */}
             <button

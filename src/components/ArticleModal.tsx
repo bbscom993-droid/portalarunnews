@@ -26,6 +26,7 @@ import {
   Printer,
   Moon,
   Sun,
+  Coffee,
   Download,
   Loader2,
   AlignLeft,
@@ -223,25 +224,59 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
   const [lineSpacing, setLineSpacing] = useState<'normal' | 'relaxed' | 'loose'>('relaxed');
   const [copiedDraft, setCopiedDraft] = useState(false);
 
-  // Independent 'Night Mode' reading setting
-  const [isNightMode, setIsNightMode] = useState<boolean>(() => {
+  // Independent Reading Theme setting: 'light' | 'warm' | 'dark'
+  // 'warm' is Mode Baca Nyaman (Sepia / Warm) for soothing blue-light filtered reading
+  const [readingTheme, setReadingTheme] = useState<'light' | 'warm' | 'dark'>(() => {
     try {
-      return localStorage.getItem('wartakini_reader_night_mode') === 'true';
+      const savedTheme = localStorage.getItem('wartakini_reader_reading_theme');
+      if (savedTheme === 'warm' || savedTheme === 'dark' || savedTheme === 'light') {
+        return savedTheme;
+      }
+      const savedNight = localStorage.getItem('wartakini_reader_night_mode');
+      if (savedNight === 'true') return 'dark';
+      return 'light';
     } catch {
-      return false;
+      return 'light';
     }
   });
 
+  const isNightMode = readingTheme === 'dark';
+  const isWarmMode = readingTheme === 'warm';
+
   const toggleNightMode = () => {
-    setIsNightMode((prev) => {
-      const next = !prev;
+    setReadingTheme((prev) => {
+      const next = prev === 'dark' ? 'light' : 'dark';
       try {
-        localStorage.setItem('wartakini_reader_night_mode', String(next));
+        localStorage.setItem('wartakini_reader_reading_theme', next);
+        localStorage.setItem('wartakini_reader_night_mode', String(next === 'dark'));
       } catch (e) {
-        console.error('Failed to save night mode setting:', e);
+        console.error('Failed to save reading theme:', e);
       }
       return next;
     });
+  };
+
+  const toggleWarmMode = () => {
+    setReadingTheme((prev) => {
+      const next = prev === 'warm' ? 'light' : 'warm';
+      try {
+        localStorage.setItem('wartakini_reader_reading_theme', next);
+        localStorage.setItem('wartakini_reader_night_mode', 'false');
+      } catch (e) {
+        console.error('Failed to save warm mode setting:', e);
+      }
+      return next;
+    });
+  };
+
+  const setSpecificTheme = (theme: 'light' | 'warm' | 'dark') => {
+    setReadingTheme(theme);
+    try {
+      localStorage.setItem('wartakini_reader_reading_theme', theme);
+      localStorage.setItem('wartakini_reader_night_mode', String(theme === 'dark'));
+    } catch (e) {
+      console.error('Failed to save reading theme:', e);
+    }
   };
 
   // Auto-scroll state & speed control
@@ -1373,6 +1408,7 @@ ${article.tags.map(t => `#${t}`).join(', ')}
       fontFamily: fontFamily,
       isFirstParagraph: index === 0,
       isNightMode: isNightMode,
+      isWarmMode: isWarmMode,
     });
   };
 
@@ -1410,6 +1446,8 @@ ${article.tags.map(t => `#${t}`).join(', ')}
         className={`rounded-2xl max-w-4xl w-full max-h-[94vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 my-auto relative transition-colors duration-300 ${
           isNightMode 
             ? 'bg-slate-950 text-slate-100 border-2 border-yellow-500/80 shadow-slate-950/80' 
+            : isWarmMode
+            ? 'bg-[#fbf4e6] text-[#382b1d] border-2 border-amber-400 shadow-amber-950/20'
             : 'bg-white text-slate-900 border-2 border-yellow-400'
         }`}
         onClick={(e) => e.stopPropagation()}
@@ -1439,7 +1477,11 @@ ${article.tags.map(t => `#${t}`).join(', ')}
         {isFocusMode ? (
           /* MINIMAL DISTRACTION-FREE FOCUS MODE HEADER */
           <div className={`flex items-center justify-between px-4 sm:px-6 py-3 border-b z-20 flex-shrink-0 transition-colors ${
-            isNightMode ? 'bg-slate-900 text-slate-100 border-slate-800' : 'bg-slate-50 text-slate-900 border-slate-200'
+            isNightMode 
+              ? 'bg-slate-900 text-slate-100 border-slate-800' 
+              : isWarmMode
+              ? 'bg-[#f4ebd6] text-[#3e2e1c] border-[#dfcfad]'
+              : 'bg-slate-50 text-slate-900 border-slate-200'
           }`}>
             <div className="flex items-center gap-2.5">
               <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-400 text-slate-950 font-black text-xs font-mono shadow-xs border border-yellow-500">
@@ -1454,7 +1496,7 @@ ${article.tags.map(t => `#${t}`).join(', ')}
             <div className="flex items-center gap-2">
               {/* Serif / Sans Font Switcher */}
               <div className={`flex items-center p-0.5 rounded-xl border text-xs ${
-                isNightMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-300'
+                isNightMode ? 'bg-slate-800 border-slate-700' : isWarmMode ? 'bg-[#f8f1e2] border-[#dfcfad]' : 'bg-white border-slate-300'
               }`}>
                 <button
                   type="button"
@@ -1484,7 +1526,7 @@ ${article.tags.map(t => `#${t}`).join(', ')}
 
               {/* Font Size Adjuster */}
               <div className={`flex items-center p-0.5 rounded-xl border text-xs ${
-                isNightMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-300'
+                isNightMode ? 'bg-slate-800 border-slate-700' : isWarmMode ? 'bg-[#f8f1e2] border-[#dfcfad]' : 'bg-white border-slate-300'
               }`}>
                 <button
                   type="button"
@@ -1512,6 +1554,24 @@ ${article.tags.map(t => `#${t}`).join(', ')}
                   A+
                 </button>
               </div>
+
+              {/* Mode Baca Nyaman (Sepia/Warm) Button in Focus Mode */}
+              <button
+                type="button"
+                onClick={toggleWarmMode}
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                  isWarmMode 
+                    ? 'bg-amber-300 text-amber-950 border-amber-400 font-black shadow-xs ring-1 ring-amber-500' 
+                    : isNightMode
+                    ? 'bg-slate-800 hover:bg-slate-700 text-amber-200 border-slate-700'
+                    : 'bg-white hover:bg-amber-50 text-amber-900 border-amber-200'
+                }`}
+                title={isWarmMode ? 'Matikan Mode Baca Nyaman (Kembali ke Normal)' : 'Aktifkan Mode Baca Nyaman (Sepia/Warm) — Lembut di mata untuk membaca lama'}
+                aria-label="Mode Baca Nyaman"
+              >
+                <Coffee className="w-3.5 h-3.5 text-amber-700" />
+                <span className="hidden sm:inline">Nyaman</span>
+              </button>
 
               {/* Night / Light Mode Toggle */}
               <button
@@ -1559,7 +1619,11 @@ ${article.tags.map(t => `#${t}`).join(', ')}
           <>
             {/* Sticky Modal Header Bar */}
             <div className={`flex items-center justify-between px-4 sm:px-6 py-3 border-b z-20 flex-shrink-0 transition-colors ${
-              isNightMode ? 'bg-slate-900 text-slate-100 border-slate-800' : 'bg-sky-950 text-white border-sky-800'
+              isNightMode 
+                ? 'bg-slate-900 text-slate-100 border-slate-800' 
+                : isWarmMode
+                ? 'bg-[#43311f] text-[#fbf4e6] border-[#5a422a]'
+                : 'bg-sky-950 text-white border-sky-800'
             }`}>
               <div className="flex items-center gap-2 flex-wrap">
             <span className="bg-yellow-400 text-sky-950 font-black text-[11px] sm:text-xs px-2.5 py-0.5 rounded-md uppercase tracking-wider border border-yellow-500 font-mono">
@@ -1584,6 +1648,30 @@ ${article.tags.map(t => `#${t}`).join(', ')}
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Quick Header 'Mode Baca Nyaman' (Sepia/Warm) Button */}
+            <button
+              id="toggle-warm-mode-header-btn"
+              type="button"
+              onClick={toggleWarmMode}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+                isWarmMode
+                  ? 'bg-amber-300 text-amber-950 border-amber-400 font-black shadow-amber-300/30 ring-1 ring-amber-500'
+                  : isNightMode
+                  ? 'bg-slate-800 hover:bg-slate-700 text-amber-200 hover:text-amber-100 border-slate-700'
+                  : 'bg-sky-900 hover:bg-sky-800 text-amber-200 hover:text-amber-100 border-sky-700'
+              }`}
+              title={
+                isWarmMode
+                  ? 'Matikan Mode Baca Nyaman (Sepia/Warm) — Kembali ke Tampilan Normal'
+                  : 'Aktifkan Mode Baca Nyaman (Sepia/Warm) — Redakan ketegangan mata & filter cahaya biru untuk membaca santai'
+              }
+              aria-label="Mode Baca Nyaman"
+            >
+              <Coffee className="w-3.5 h-3.5 text-amber-300" />
+              <span className="hidden md:inline">Mode Nyaman</span>
+              {isWarmMode && <span className="w-1.5 h-1.5 rounded-full bg-amber-700 animate-pulse" />}
+            </button>
+
             {/* Quick Header Night Mode Toggle Button */}
             <button
               id="toggle-night-mode-header-btn"
@@ -1845,27 +1933,55 @@ ${article.tags.map(t => `#${t}`).join(', ')}
               </button>
             </div>
 
-            {/* Night Mode Dedicated Setting Button */}
+            {/* Reading Theme Selector: Terang, Mode Nyaman (Sepia/Warm), and Malam */}
             <div className={`flex items-center gap-1 p-1 rounded-xl border transition-colors ${
               isNightMode
                 ? 'bg-slate-800 border-slate-700 text-slate-200'
+                : isWarmMode
+                ? 'bg-[#f4ebd6] border-[#dfcfad] text-[#4a3a27]'
                 : 'bg-white border-sky-200 text-sky-900'
             }`}>
               <span className="text-[11px] font-bold px-1 font-mono flex items-center gap-1">
-                {isNightMode ? <Moon className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" /> : <Sun className="w-3.5 h-3.5 text-amber-500" />}
-                <span className="hidden sm:inline">Mode Malam:</span>
+                <Coffee className="w-3.5 h-3.5 text-amber-600" />
+                <span className="hidden sm:inline">Tema:</span>
               </span>
               <button
                 type="button"
-                onClick={toggleNightMode}
+                onClick={() => setSpecificTheme('light')}
                 className={`px-2 py-0.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  isNightMode
+                  readingTheme === 'light'
                     ? 'bg-yellow-400 text-slate-950 font-black shadow-xs'
-                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                    : isNightMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800'
                 }`}
-                title={isNightMode ? 'Matikan Mode Malam (Night Mode)' : 'Aktifkan Mode Malam untuk kenyamanan mata di tempat gelap'}
+                title="Mode Terang (Normal)"
               >
-                {isNightMode ? '🌙 ON' : '☀️ OFF'}
+                ☀️ Terang
+              </button>
+              <button
+                id="btn-reading-mode-warm"
+                type="button"
+                onClick={toggleWarmMode}
+                className={`px-2.5 py-0.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                  isWarmMode
+                    ? 'bg-amber-300 text-amber-950 font-black shadow-xs ring-1 ring-amber-500'
+                    : 'bg-amber-100/70 hover:bg-amber-100 text-amber-900'
+                }`}
+                title="Mode Baca Nyaman (Sepia/Warm) — Kurangi ketegangan mata dengan latar hangat & filter cahaya biru"
+              >
+                <Coffee className="w-3 h-3 text-amber-700" />
+                <span>☕ Nyaman (Warm)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setSpecificTheme('dark')}
+                className={`px-2 py-0.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  readingTheme === 'dark'
+                    ? 'bg-yellow-400 text-slate-950 font-black shadow-xs'
+                    : isNightMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800'
+                }`}
+                title="Mode Malam (Gelap)"
+              >
+                🌙 Malam
               </button>
             </div>
 
@@ -2042,22 +2158,33 @@ ${article.tags.map(t => `#${t}`).join(', ')}
         <div id="live-font-scaling-preview" className={`border-b px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs font-medium relative z-20 transition-colors ${
           isNightMode 
             ? 'bg-slate-900/95 border-slate-800 text-slate-300' 
+            : isWarmMode
+            ? 'bg-[#f5ecda] border-[#dfcfad] text-[#4a3a27]'
             : 'bg-sky-100/60 border-sky-200/50 text-sky-800'
         }`}>
           <div className="flex items-center gap-1.5">
-            <span className={`flex-shrink-0 w-2 h-2 rounded-full ${isNightMode ? 'bg-yellow-400 animate-pulse' : 'bg-emerald-500 animate-pulse'}`} />
-            <span className={`font-bold font-mono tracking-tight uppercase text-[10px] ${isNightMode ? 'text-slate-300' : 'text-sky-900'}`}>
+            <span className={`flex-shrink-0 w-2 h-2 rounded-full ${
+              isNightMode ? 'bg-yellow-400 animate-pulse' : isWarmMode ? 'bg-amber-600 animate-pulse' : 'bg-emerald-500 animate-pulse'
+            }`} />
+            <span className={`font-bold font-mono tracking-tight uppercase text-[10px] ${
+              isNightMode ? 'text-slate-300' : isWarmMode ? 'text-amber-950' : 'text-sky-900'
+            }`}>
               Pratinjau Pembaca:
             </span>
           </div>
           <div className="flex items-center gap-3 flex-1 min-w-[150px] justify-center">
             <span className={`truncate text-center transition-all duration-200 font-semibold ${
-              isNightMode ? 'text-yellow-300' : 'text-sky-950'
+              isNightMode ? 'text-yellow-300' : isWarmMode ? 'text-amber-950 font-bold' : 'text-sky-950'
             } ${getFontSizeClass()} ${fontFamily === 'serif' ? 'font-serif italic' : 'font-sans'}`}>
               "Arun News - Portal Berita Berintegritas"
             </span>
           </div>
           <div className="flex items-center gap-2">
+            {isWarmMode && (
+              <span className="flex items-center gap-1 text-[10px] font-mono font-black text-amber-950 bg-amber-300/80 px-2 py-0.5 rounded-lg border border-amber-400 shadow-2xs">
+                <Coffee className="w-3 h-3 text-amber-800" /> Mode Nyaman (Sepia)
+              </span>
+            )}
             {isNightMode && (
               <span className="flex items-center gap-1 text-[10px] font-mono font-black text-yellow-300 bg-yellow-400/20 px-2 py-0.5 rounded-lg border border-yellow-400/40">
                 <Moon className="w-3 h-3 fill-yellow-300 text-yellow-300" /> Mode Malam
@@ -2066,6 +2193,8 @@ ${article.tags.map(t => `#${t}`).join(', ')}
             <div className={`flex items-center gap-1.5 text-[10px] font-black uppercase px-2 py-0.5 rounded-lg border ${
               isNightMode 
                 ? 'text-yellow-300 bg-slate-800 border-slate-700' 
+                : isWarmMode
+                ? 'text-amber-950 bg-amber-200/70 border-amber-300'
                 : 'text-yellow-800 bg-yellow-400/20 border-yellow-400/40'
             }`}>
               <span>Skala: {localFontSize === 'normal' ? '100% (Normal)' : localFontSize === 'large' ? '125% (Besar)' : '150% (Ekstra Besar)'}</span>
@@ -2084,6 +2213,8 @@ ${article.tags.map(t => `#${t}`).join(', ')}
           } flex-1 scroll-smooth transition-colors duration-300 ${
             isNightMode 
               ? 'bg-slate-950 text-slate-100' 
+              : isWarmMode
+              ? 'bg-[#fbf4e6] text-[#382b1d]'
               : isFocusMode 
               ? 'bg-[#fcfbf9] text-slate-900' 
               : 'bg-white text-slate-900'
@@ -2112,12 +2243,14 @@ ${article.tags.map(t => `#${t}`).join(', ')}
             <div className={`rounded-2xl p-4 sm:p-7 border-2 font-mono text-xs space-y-6 transition-colors ${
               isNightMode
                 ? 'bg-slate-900 border-slate-800 text-slate-200'
+                : isWarmMode
+                ? 'bg-[#fbf4e6] border-[#dfcfad] text-[#382b1d]'
                 : 'bg-slate-50 border-sky-200 text-slate-800'
             }`}>
               
               {/* Draft Header Badge */}
               <div className={`flex items-center justify-between pb-4 border-b ${
-                isNightMode ? 'border-slate-800' : 'border-slate-300'
+                isNightMode ? 'border-slate-800' : isWarmMode ? 'border-[#dfcfad]' : 'border-slate-300'
               }`}>
                 <div className="flex items-center gap-2">
                   <span className={`px-2 py-0.5 rounded font-black text-[11px] uppercase ${
@@ -2128,7 +2261,7 @@ ${article.tags.map(t => `#${t}`).join(', ')}
                   <span className={isNightMode ? 'text-slate-400 font-semibold' : 'text-slate-500 font-semibold'}>• ID: {article.id}</span>
                 </div>
                 <div className={`font-mono font-bold text-[11px] flex items-center gap-1.5 px-2.5 py-1 rounded-lg border ${
-                  isNightMode ? 'bg-slate-800 text-slate-300 border-slate-700' : 'bg-white text-slate-600 border-slate-300'
+                  isNightMode ? 'bg-slate-800 text-slate-300 border-slate-700' : isWarmMode ? 'bg-[#f4ebd6] text-[#4a3a27] border-[#dfcfad]' : 'bg-white text-slate-600 border-slate-300'
                 }`}>
                   <Clock className="w-3.5 h-3.5 text-amber-500" />
                   <span>{readingTimeInfo.wordCount.toLocaleString('id-ID')} Kata • {readingTimeInfo.formatted}</span>
@@ -2137,12 +2270,12 @@ ${article.tags.map(t => `#${t}`).join(', ')}
 
               {/* Title & Metadata */}
               <div className="space-y-2">
-                <div className={`font-bold uppercase text-[11px] ${isNightMode ? 'text-yellow-400' : 'text-slate-500'}`}>JUDUL BERITA:</div>
-                <h1 className={`text-xl sm:text-2xl font-black font-sans leading-snug ${isNightMode ? 'text-white' : 'text-slate-950'}`}>
+                <div className={`font-bold uppercase text-[11px] ${isNightMode ? 'text-yellow-400' : isWarmMode ? 'text-amber-900' : 'text-slate-500'}`}>JUDUL BERITA:</div>
+                <h1 className={`text-xl sm:text-2xl font-black font-sans leading-snug ${isNightMode ? 'text-white' : isWarmMode ? 'text-[#302111]' : 'text-slate-950'}`}>
                   {article.title}
                 </h1>
                 <div className={`grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 text-[11px] p-3 rounded-xl border ${
-                  isNightMode ? 'bg-slate-800 text-slate-300 border-slate-700' : 'bg-white text-slate-600 border-slate-200'
+                  isNightMode ? 'bg-slate-800 text-slate-300 border-slate-700' : isWarmMode ? 'bg-[#f4ebd6] text-[#4a3a27] border-[#dfcfad]' : 'bg-white text-slate-600 border-slate-200'
                 }`}>
                   <div><strong>Kanal:</strong> {article.categoryLabel}</div>
                   <div><strong>Penulis:</strong> {article.author.name}</div>
@@ -2152,9 +2285,9 @@ ${article.tags.map(t => `#${t}`).join(', ')}
 
               {/* Lead Paragraph */}
               <div className="space-y-1.5">
-                <div className={`font-bold uppercase text-[11px] ${isNightMode ? 'text-yellow-400' : 'text-slate-500'}`}>LEAD (TERAS BERITA):</div>
+                <div className={`font-bold uppercase text-[11px] ${isNightMode ? 'text-yellow-400' : isWarmMode ? 'text-amber-900' : 'text-slate-500'}`}>LEAD (TERAS BERITA):</div>
                 <div className={`p-3 rounded-xl border font-sans font-medium text-sm leading-relaxed ${
-                  isNightMode ? 'bg-amber-950/40 border-amber-600/60 text-amber-100' : 'bg-yellow-50 border-yellow-300 text-slate-900'
+                  isNightMode ? 'bg-amber-950/40 border-amber-600/60 text-amber-100' : isWarmMode ? 'bg-[#f4ebd6] border-[#dfcfad] text-[#382b1d]' : 'bg-yellow-50 border-yellow-300 text-slate-900'
                 }`}>
                   {article.excerpt}
                 </div>
@@ -2217,7 +2350,7 @@ ${article.tags.map(t => `#${t}`).join(', ')}
                     : 'text-4xl sm:text-5xl md:text-6xl'
                   : getTitleFontSizeClass()
               } font-black leading-tight mb-4 tracking-tight ${
-                isNightMode ? 'text-yellow-300' : 'text-sky-950'
+                isNightMode ? 'text-yellow-300' : isWarmMode ? 'text-[#302111]' : 'text-sky-950'
               }`}>
                 {article.title}
               </h1>
@@ -2236,6 +2369,8 @@ ${article.tags.map(t => `#${t}`).join(', ')}
               } transition-colors ${
                 isNightMode
                   ? 'bg-slate-900/90 border-slate-800 text-slate-200'
+                  : isWarmMode
+                  ? 'bg-[#f4ebd6] border-[#dfcfad] text-[#3e2e1c]'
                   : isFocusMode
                   ? 'bg-amber-50/40 border-amber-200 text-slate-700'
                   : 'bg-yellow-50/50 border-yellow-200 text-slate-700'
@@ -2246,7 +2381,7 @@ ${article.tags.map(t => `#${t}`).join(', ')}
               {/* Author & Metas Row */}
               {isFocusMode ? (
                 <div className={`flex flex-wrap items-center justify-between gap-3 py-3 border-y mb-8 text-xs transition-colors ${
-                  isNightMode ? 'border-slate-800 text-slate-400' : 'border-slate-200 text-slate-600'
+                  isNightMode ? 'border-slate-800 text-slate-400' : isWarmMode ? 'border-[#dfcfad] text-[#55432f]' : 'border-slate-200 text-slate-600'
                 }`}>
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-slate-900 dark:text-slate-200">{article.author.name}</span>
@@ -2264,6 +2399,8 @@ ${article.tags.map(t => `#${t}`).join(', ')}
                 <div className={`flex flex-wrap items-center justify-between gap-3 py-3 border-y mb-6 text-xs px-3.5 rounded-xl transition-colors ${
                   isNightMode 
                     ? 'bg-slate-900 border-slate-800 text-slate-300' 
+                    : isWarmMode
+                    ? 'bg-[#f4ebd6] border-[#dfcfad] text-[#4a3a27]'
                     : 'bg-sky-50 border-sky-100 text-slate-600'
                 }`}>
                   <div className="flex items-center gap-2.5 sm:gap-3">
@@ -2275,13 +2412,13 @@ ${article.tags.map(t => `#${t}`).join(', ')}
                     />
                     <div>
                       <div className={`font-bold text-xs sm:text-sm flex items-center gap-1 ${
-                        isNightMode ? 'text-yellow-300' : 'text-sky-950'
+                        isNightMode ? 'text-yellow-300' : isWarmMode ? 'text-[#302111]' : 'text-sky-950'
                       }`}>
                         {article.author.name}
                         <CheckCircle2 className="w-3.5 h-3.5 text-yellow-500" />
                       </div>
                       <div className={`text-[11px] sm:text-xs font-medium ${
-                        isNightMode ? 'text-sky-300' : 'text-sky-700'
+                        isNightMode ? 'text-sky-300' : isWarmMode ? 'text-[#6a563f]' : 'text-sky-700'
                       }`}>{article.author.role}</div>
                     </div>
                   </div>
@@ -2708,18 +2845,20 @@ ${article.tags.map(t => `#${t}`).join(', ')}
               <div className={`rounded-2xl p-5 border mb-6 shadow-2xs relative overflow-hidden transition-colors ${
                 isNightMode
                   ? 'bg-slate-900/90 border-amber-500/40 text-slate-100'
+                  : isWarmMode
+                  ? 'bg-[#f4ebd6] border-[#dfcfad] text-[#3e2e1c]'
                   : 'bg-amber-50/45 border-amber-200 text-slate-800'
               }`}>
                 <div className="absolute top-0 right-0 p-3">
                   <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider font-mono ${
-                    isNightMode ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-amber-100 text-amber-700'
+                    isNightMode ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : isWarmMode ? 'bg-[#ebd9b8] text-amber-950 border border-[#dfcfad]' : 'bg-amber-100 text-amber-700'
                   }`}>
                     Assistan Arun
                   </span>
                 </div>
                 
                 <div className={`flex items-center gap-2 text-xs sm:text-sm font-black uppercase tracking-wider mb-3.5 font-sans ${
-                  isNightMode ? 'text-amber-300' : 'text-amber-950'
+                  isNightMode ? 'text-amber-300' : isWarmMode ? 'text-amber-950' : 'text-amber-950'
                 }`}>
                   <span className="text-lg">⚡</span>
                   Ringkasan Cepat Berita
@@ -2767,7 +2906,7 @@ ${article.tags.map(t => `#${t}`).join(', ')}
                     {summary.map((point, index) => (
                       <li key={index} className="flex items-start gap-2.5">
                         <span className="text-amber-500 font-bold mt-0.5 text-xs select-none">✦</span>
-                        <span className={`font-medium ${isNightMode ? 'text-amber-100' : 'text-amber-950/90'}`}>{point}</span>
+                        <span className={`font-medium ${isNightMode ? 'text-amber-100' : isWarmMode ? 'text-[#3e2e1c]' : 'text-amber-950/90'}`}>{point}</span>
                       </li>
                     ))}
                   </ul>
@@ -2779,10 +2918,12 @@ ${article.tags.map(t => `#${t}`).join(', ')}
                 <div className={`rounded-2xl p-5 border-2 mb-6 shadow-xs transition-colors ${
                   isNightMode
                     ? 'bg-slate-900/90 border-slate-700 text-slate-100'
+                    : isWarmMode
+                    ? 'bg-[#f5ecda] border-[#dfcfad] text-[#3e2e1c]'
                     : 'bg-sky-50 border-sky-200 text-slate-800'
                 }`}>
                   <div className={`flex items-center gap-2 text-xs sm:text-sm font-black uppercase tracking-wide mb-3 font-mono ${
-                    isNightMode ? 'text-yellow-300' : 'text-sky-950'
+                    isNightMode ? 'text-yellow-300' : isWarmMode ? 'text-amber-950' : 'text-sky-950'
                   }`}>
                     <Sparkles className="w-4 h-4 text-yellow-500" />
                     Poin Penting Warta Ini (Key Takeaways)
@@ -2793,7 +2934,7 @@ ${article.tags.map(t => `#${t}`).join(', ')}
                         <span className="flex-shrink-0 w-5 h-5 rounded-lg bg-yellow-400 text-sky-950 font-black text-xs flex items-center justify-center shadow-2xs mt-0.5 border border-yellow-500">
                           ✓
                         </span>
-                        <span className={`leading-relaxed font-medium ${isNightMode ? 'text-slate-200' : 'text-slate-800'}`}>{point}</span>
+                        <span className={`leading-relaxed font-medium ${isNightMode ? 'text-slate-200' : isWarmMode ? 'text-[#3e2e1c]' : 'text-slate-800'}`}>{point}</span>
                       </li>
                     ))}
                   </ul>
@@ -2862,7 +3003,7 @@ ${article.tags.map(t => `#${t}`).join(', ')}
           )}
 
           {/* Structured Body Paragraphs */}
-          <div className={`${isNightMode ? 'text-slate-100' : 'text-slate-900'} ${
+          <div className={`${isNightMode ? 'text-slate-100' : isWarmMode ? 'text-[#382b1d]' : 'text-slate-900'} ${
             isFocusMode 
               ? localFontSize === 'normal'
                 ? 'text-lg sm:text-xl'
@@ -2898,14 +3039,22 @@ ${article.tags.map(t => `#${t}`).join(', ')}
 
               {/* Focus Mode Clean Reading Conclusion */}
               {isFocusMode && (
-                <div className="my-12 text-center py-8 border-t border-dashed border-slate-300 dark:border-slate-800 animate-in fade-in duration-300">
-                  <div className="text-xs font-mono uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-2">
+                <div className={`my-12 text-center py-8 border-t border-dashed animate-in fade-in duration-300 ${
+                  isNightMode ? 'border-slate-800' : isWarmMode ? 'border-[#dfcfad]' : 'border-slate-300'
+                }`}>
+                  <div className={`text-xs font-mono uppercase tracking-widest mb-2 ${
+                    isNightMode ? 'text-slate-500' : isWarmMode ? 'text-amber-800/70' : 'text-slate-400'
+                  }`}>
                     ◆ ◆ ◆
                   </div>
-                  <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                  <p className={`text-sm font-medium ${
+                    isNightMode ? 'text-slate-300' : isWarmMode ? 'text-[#3e2e1c]' : 'text-slate-600'
+                  }`}>
                     Anda telah menyelesaikan naskah warta ini dalam <strong>Mode Fokus</strong>.
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  <p className={`text-xs mt-1 ${
+                    isNightMode ? 'text-slate-400' : isWarmMode ? 'text-[#6a563f]' : 'text-slate-500'
+                  }`}>
                     Ingin membaca tanggapan pembaca, memberikan reaksi, atau membagikan warta ini?
                   </p>
                   <div className="mt-5 flex items-center justify-center gap-3">
@@ -2925,10 +3074,10 @@ ${article.tags.map(t => `#${t}`).join(', ')}
                 <>
                   {/* Tags Chips */}
                   <div className={`flex flex-wrap items-center gap-2 pt-4 border-t mb-6 ${
-                    isNightMode ? 'border-slate-800' : 'border-sky-100'
+                    isNightMode ? 'border-slate-800' : isWarmMode ? 'border-[#dfcfad]' : 'border-sky-100'
                   }`}>
                     <span className={`flex items-center gap-1 text-xs font-bold uppercase tracking-wide mr-1 font-mono ${
-                      isNightMode ? 'text-yellow-300' : 'text-sky-900'
+                      isNightMode ? 'text-yellow-300' : isWarmMode ? 'text-amber-950' : 'text-sky-900'
                     }`}>
                       <Tag className="w-3.5 h-3.5 text-yellow-500" /> Topik Terkait:
                     </span>

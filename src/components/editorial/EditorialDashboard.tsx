@@ -97,6 +97,7 @@ import {
 import { ArticleEditorModal } from './ArticleEditorModal';
 import { DailyViewsChart } from './DailyViewsChart';
 import { CategoryReadersBarChart } from './CategoryReadersBarChart';
+import { PopularArticlesChart } from './PopularArticlesChart';
 import { CommentSentimentAnalytics } from './CommentSentimentAnalytics';
 import { SeoHeadlineStudio } from './SeoHeadlineStudio';
 import { AdManagementView } from './AdManagementView';
@@ -1282,6 +1283,9 @@ export const EditorialDashboard: React.FC<EditorialDashboardProps> = ({
                 <CategoryReadersBarChart articles={articles} categories={categories} />
               </div>
 
+              {/* Data Visualization Chart: Popular Articles (Views, Likes, Shares) (Recharts) */}
+              <PopularArticlesChart articles={articles} />
+
               {/* Gemini AI Suite: Dual Banner for SEO Headline Studio & Sentiment Analytics */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 
@@ -1577,9 +1581,30 @@ export const EditorialDashboard: React.FC<EditorialDashboardProps> = ({
                               <h4 className="font-bold text-sky-950 line-clamp-1">
                                 {article.title}
                               </h4>
-                              <span className="text-[10px] text-slate-500 font-mono">
-                                {article.publishedAt}
-                              </span>
+                              <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                                <span className="text-[10px] text-slate-500 font-mono">
+                                  {article.publishedAt}
+                                </span>
+                                {article.status === 'pending' && (
+                                  <span className="text-[9px] bg-amber-100 text-amber-900 border border-amber-400 font-mono font-bold px-1.5 py-0.2 rounded-md flex items-center gap-1 shadow-2xs">
+                                    <Clock className="w-2.5 h-2.5 text-amber-600 animate-spin" />
+                                    <span>Pending</span>
+                                    {article.scheduledPublishAt && (
+                                      <span className="text-amber-700">({new Date(article.scheduledPublishAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} {new Date(article.scheduledPublishAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })})</span>
+                                    )}
+                                  </span>
+                                )}
+                                {article.status === 'draft' && (
+                                  <span className="text-[9px] bg-slate-100 text-slate-700 border border-slate-300 font-mono font-bold px-1.5 py-0.2 rounded-md">
+                                    Draft
+                                  </span>
+                                )}
+                                {(!article.status || article.status === 'published') && (
+                                  <span className="text-[9px] bg-emerald-100 text-emerald-800 border border-emerald-300 font-mono font-bold px-1.5 py-0.2 rounded-md">
+                                    Published
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </td>
@@ -1750,6 +1775,7 @@ export const EditorialDashboard: React.FC<EditorialDashboardProps> = ({
               {/* Data Visualization Charts: Daily Distribution of Article Views & Category Analytics (Recharts) */}
               <DailyViewsChart articles={articles} categories={categories} />
               <CategoryReadersBarChart articles={articles} categories={categories} />
+              <PopularArticlesChart articles={articles} />
 
               {/* Panel Visualisasi Data: Statistik Klik & Performa Iklan Real-Time (Recharts) */}
               <AdClicksBarChart 

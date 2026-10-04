@@ -115,6 +115,7 @@ interface RenderParagraphOptions {
   isFirstParagraph?: boolean;
   dropCap?: boolean;
   isNightMode?: boolean;
+  isWarmMode?: boolean;
 }
 
 /**
@@ -141,6 +142,7 @@ export function renderRichParagraph(
     isFirstParagraph = false,
     dropCap = false,
     isNightMode = false,
+    isWarmMode = false,
   } = options;
 
   let raw = para.trim();
@@ -149,9 +151,11 @@ export function renderRichParagraph(
   // 1. Check Divider
   if (raw === '---' || raw === '***' || raw === '___') {
     return (
-      <div key={index} className={`my-6 border-t-2 border-dashed relative ${isNightMode ? 'border-slate-800' : 'border-sky-200'}`}>
+      <div key={index} className={`my-6 border-t-2 border-dashed relative ${
+        isNightMode ? 'border-slate-800' : isWarmMode ? 'border-[#dfcfad]' : 'border-sky-200'
+      }`}>
         <div className={`absolute left-1/2 -top-2.5 -translate-x-1/2 px-2 text-xs font-mono ${
-          isNightMode ? 'bg-slate-950 text-slate-500' : 'bg-white text-sky-400'
+          isNightMode ? 'bg-slate-950 text-slate-500' : isWarmMode ? 'bg-[#fbf4e6] text-amber-800/80' : 'bg-white text-sky-400'
         }`}>
           ◆ ◆ ◆
         </div>
@@ -187,11 +191,21 @@ export function renderRichParagraph(
     const isH3 = raw.startsWith('### ');
     const headingText = raw.replace(/^###?\s+/, '').trim();
     return (
-      <div key={index} className={`my-5 pt-3 pb-1 border-b ${isNightMode ? 'border-slate-800' : 'border-sky-100'} ${alignmentClass}`}>
+      <div key={index} className={`my-5 pt-3 pb-1 border-b ${
+        isNightMode ? 'border-slate-800' : isWarmMode ? 'border-[#dfcfad]' : 'border-sky-100'
+      } ${alignmentClass}`}>
         <h3 className={`${
           isH3 
-            ? isNightMode ? 'text-base sm:text-lg font-black text-yellow-300' : 'text-base sm:text-lg font-black text-sky-900'
-            : isNightMode ? 'text-lg sm:text-xl font-black text-yellow-400' : 'text-lg sm:text-xl font-black text-sky-950'
+            ? isNightMode 
+              ? 'text-base sm:text-lg font-black text-yellow-300' 
+              : isWarmMode 
+              ? 'text-base sm:text-lg font-black text-[#43311f]' 
+              : 'text-base sm:text-lg font-black text-sky-900'
+            : isNightMode 
+            ? 'text-lg sm:text-xl font-black text-yellow-400' 
+            : isWarmMode 
+            ? 'text-lg sm:text-xl font-black text-[#302111]' 
+            : 'text-lg sm:text-xl font-black text-sky-950'
         } flex items-center gap-2 ${alignmentClass === 'text-center' ? 'justify-center' : alignmentClass === 'text-right' ? 'justify-end' : ''}`}>
           <span className="w-2.5 h-2.5 rounded-full bg-yellow-400 flex-shrink-0" />
           <span>{renderInlineFormattedText(headingText)}</span>
@@ -207,35 +221,43 @@ export function renderRichParagraph(
     const body = calloutMatch[2];
     let borderTheme = isNightMode 
       ? 'border-slate-700 bg-slate-900 text-slate-100' 
+      : isWarmMode
+      ? 'border-[#dfcfad] bg-[#f5ecda] text-[#3e2e1c]'
       : 'border-sky-300 bg-sky-50 text-sky-950';
     let icon = <Info className="w-5 h-5 text-sky-500 flex-shrink-0" />;
 
     if (tag === 'FAKTA' || tag === 'DATA') {
       borderTheme = isNightMode 
         ? 'border-emerald-800 bg-emerald-950/60 text-emerald-100' 
+        : isWarmMode
+        ? 'border-emerald-700/40 bg-emerald-900/10 text-emerald-950'
         : 'border-emerald-300 bg-emerald-50 text-emerald-950';
       icon = <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />;
     } else if (tag === 'PERINGATAN') {
       borderTheme = isNightMode 
         ? 'border-amber-800 bg-amber-950/60 text-amber-100' 
+        : isWarmMode
+        ? 'border-amber-700/50 bg-amber-900/10 text-amber-950'
         : 'border-amber-300 bg-amber-50 text-amber-950';
       icon = <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0" />;
     } else if (tag === 'CATATAN REDAKSI') {
       borderTheme = isNightMode 
         ? 'border-yellow-500/60 bg-slate-900 text-slate-100' 
+        : isWarmMode
+        ? 'border-amber-500/50 bg-[#f4ebd6] text-[#3e2e1c]'
         : 'border-yellow-400 bg-yellow-50/90 text-sky-950';
       icon = <Sparkles className="w-5 h-5 text-yellow-500 flex-shrink-0" />;
     }
 
     return (
       <div 
-        key={index}
+        key={index} 
         className={`my-5 p-4 sm:p-5 rounded-2xl border-2 ${borderTheme} shadow-2xs flex items-start gap-3`}
       >
         {icon}
         <div className="flex-1 min-w-0">
           <div className={`text-[11px] font-black uppercase tracking-wider font-mono mb-1 ${
-            isNightMode ? 'text-yellow-300' : 'text-sky-900'
+            isNightMode ? 'text-yellow-300' : isWarmMode ? 'text-amber-900' : 'text-sky-900'
           }`}>
             {tag}
           </div>
@@ -252,15 +274,19 @@ export function renderRichParagraph(
     const quoteText = raw.replace(/^>\s*/, '').trim();
     return (
       <div 
-        key={index}
+        key={index} 
         className={`my-5 p-4 sm:p-5 rounded-2xl border-l-4 border-yellow-400 border-y border-r shadow-2xs relative ${
           isNightMode 
             ? 'bg-slate-900 border-slate-800 text-slate-100' 
+            : isWarmMode
+            ? 'bg-[#f4ebd6] border-[#dfcfad] text-[#3e2e1c]'
             : 'bg-yellow-50/80 border-yellow-200/80 text-sky-950'
         } ${alignmentClass}`}
       >
         <Quote className="w-6 h-6 text-yellow-500/30 absolute right-4 top-4 pointer-events-none" />
-        <p className={`font-serif italic font-medium ${isNightMode ? 'text-slate-100' : 'text-sky-950'} ${fontSizeClass} ${lineSpacingClass} relative z-10`}>
+        <p className={`font-serif italic font-medium ${
+          isNightMode ? 'text-slate-100' : isWarmMode ? 'text-[#3e2e1c]' : 'text-sky-950'
+        } ${fontSizeClass} ${lineSpacingClass} relative z-10`}>
           {renderInlineFormattedText(quoteText)}
         </p>
       </div>
@@ -278,12 +304,20 @@ export function renderRichParagraph(
       <div key={index} className={`my-2.5 flex items-start gap-2.5 pl-2 sm:pl-4 ${alignmentClass}`}>
         <span className={`flex-shrink-0 font-bold font-mono text-xs sm:text-sm px-2 py-0.5 rounded-md ${
           isNumber 
-            ? isNightMode ? 'bg-slate-800 text-yellow-300 font-black' : 'bg-sky-100 text-sky-950 font-black'
+            ? isNightMode 
+              ? 'bg-slate-800 text-yellow-300 font-black' 
+              : isWarmMode
+              ? 'bg-amber-200 text-amber-950 font-black'
+              : 'bg-sky-100 text-sky-950 font-black'
+            : isWarmMode
+            ? 'bg-amber-300 text-amber-950'
             : 'bg-yellow-400 text-sky-950'
         }`}>
           {bulletSymbol}
         </span>
-        <div className={`flex-1 ${isNightMode ? 'text-slate-200' : 'text-slate-800'} ${fontSizeClass} ${lineSpacingClass}`}>
+        <div className={`flex-1 ${
+          isNightMode ? 'text-slate-200' : isWarmMode ? 'text-[#3e2e1c]' : 'text-slate-800'
+        } ${fontSizeClass} ${lineSpacingClass}`}>
           {renderInlineFormattedText(itemContent)}
         </div>
       </div>
@@ -297,16 +331,18 @@ export function renderRichParagraph(
     const embedCaption = imageEmbedMatch[3] || 'Dokumentasi liputan redaksi Arun News.';
     return (
       <div key={index} className={`my-6 rounded-2xl overflow-hidden border p-2 sm:p-3 ${
-        isNightMode ? 'border-slate-800 bg-slate-900' : 'border-sky-200 bg-sky-50/60'
+        isNightMode ? 'border-slate-800 bg-slate-900' : isWarmMode ? 'border-[#dfcfad] bg-[#f5ecda]' : 'border-sky-200 bg-sky-50/60'
       }`}>
         <img 
           src={embedUrl} 
           alt={embedCaption} 
           className={`w-full h-auto max-h-96 object-cover rounded-xl border ${
-            isNightMode ? 'border-slate-800' : 'border-sky-100'
+            isNightMode ? 'border-slate-800' : isWarmMode ? 'border-[#dfcfad]' : 'border-sky-100'
           }`} 
         />
-        <p className={`text-xs italic text-center mt-2 px-2 ${isNightMode ? 'text-slate-400' : 'text-slate-600'}`}>
+        <p className={`text-xs italic text-center mt-2 px-2 ${
+          isNightMode ? 'text-slate-400' : isWarmMode ? 'text-[#7a644c]' : 'text-slate-600'
+        }`}>
           📷 {embedCaption}
         </p>
       </div>
@@ -323,13 +359,17 @@ export function renderRichParagraph(
     <p 
       key={index} 
       className={`font-normal ${fontSizeClass} ${lineSpacingClass} mb-5 ${alignmentClass} ${
-        isNightMode ? 'text-slate-100' : 'text-slate-800'
+        isNightMode ? 'text-slate-100' : isWarmMode ? 'text-[#382b1d]' : 'text-slate-800'
       } ${
         hasIndent ? 'indent-8' : ''
       } ${
         shouldApplyDropCap 
           ? `first-letter:text-4xl sm:first-letter:text-5xl first-letter:font-black ${
-              isNightMode ? 'first-letter:text-yellow-300' : 'first-letter:text-sky-950'
+              isNightMode 
+                ? 'first-letter:text-yellow-300' 
+                : isWarmMode 
+                ? 'first-letter:text-[#6a421b]' 
+                : 'first-letter:text-sky-950'
             } first-letter:mr-2.5 first-letter:float-left first-letter:leading-none` 
           : ''
       }`}
@@ -339,11 +379,15 @@ export function renderRichParagraph(
           <span className={`font-mono font-black border text-xs sm:text-sm mr-2 uppercase px-1.5 py-0.5 rounded ${
             isNightMode 
               ? 'text-yellow-300 bg-amber-950/60 border-amber-600/60' 
+              : isWarmMode
+              ? 'text-amber-950 bg-[#ebd9b8] border-[#ceb58d]'
               : 'text-sky-950 bg-yellow-400/30 border-yellow-400/60'
           }`}>
             📍 {datelineMatch[1].trim()}
           </span>
-          <span className={`font-bold mr-1.5 ${isNightMode ? 'text-yellow-400' : 'text-sky-900'}`}>—</span>
+          <span className={`font-bold mr-1.5 ${
+            isNightMode ? 'text-yellow-400' : isWarmMode ? 'text-amber-800' : 'text-sky-900'
+          }`}>—</span>
           {renderInlineFormattedText(datelineMatch[3])}
         </>
       ) : (

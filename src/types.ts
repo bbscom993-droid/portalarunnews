@@ -80,6 +80,8 @@ export interface NewsArticle {
     confidence: number;
     summary: string;
   };
+  status?: 'published' | 'pending' | 'draft';
+  scheduledPublishAt?: string;
 }
 
 export interface Category {

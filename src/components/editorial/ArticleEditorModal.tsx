@@ -71,6 +71,8 @@ export const ArticleEditorModal: React.FC<ArticleEditorModalProps> = ({
   const [likes, setLikes] = useState(140);
   const [shares, setShares] = useState(35);
   const [formatAppliedMsg, setFormatAppliedMsg] = useState(false);
+  const [status, setStatus] = useState<'published' | 'pending' | 'draft'>('published');
+  const [scheduledPublishAt, setScheduledPublishAt] = useState<string>('');
 
   // AI Draft Generator States
   const [isAiDraftModalOpen, setIsAiDraftModalOpen] = useState(false);
@@ -132,6 +134,8 @@ export const ArticleEditorModal: React.FC<ArticleEditorModalProps> = ({
       setViews(editingArticle.views || 100);
       setLikes(editingArticle.likes || 10);
       setShares(editingArticle.shares || 5);
+      setStatus(editingArticle.status || 'published');
+      setScheduledPublishAt(editingArticle.scheduledPublishAt || '');
     } else {
       // Reset for new article
       setTitle('');
@@ -144,6 +148,8 @@ export const ArticleEditorModal: React.FC<ArticleEditorModalProps> = ({
       setImageCaption('Dokumentasi liputan lapangan Redaksi Arun News.');
       setExcerpt('');
       setContent('');
+      setStatus('published');
+      setScheduledPublishAt('');
       setTagsInput('Arun News, Berita Terkini, Nasional');
       setKeyTakeaways([
         'Pemberitaan terverifikasi dari sumber terpercaya di lapangan.',
@@ -319,6 +325,8 @@ export const ArticleEditorModal: React.FC<ArticleEditorModalProps> = ({
       isTrending: isTrending,
       keyTakeaways: cleanTakeaways.length > 0 ? cleanTakeaways : ['Liputan diverifikasi oleh Meja Redaksi.'],
       comments: editingArticle?.comments || [],
+      status: status === 'pending' && scheduledPublishAt && new Date(scheduledPublishAt) > new Date() ? 'pending' : (status || 'published'),
+      scheduledPublishAt: status === 'pending' && scheduledPublishAt ? scheduledPublishAt : undefined,
     };
 
     onSave(finalArticle);
@@ -970,6 +978,95 @@ export const ArticleEditorModal: React.FC<ArticleEditorModalProps> = ({
                 />
               </div>
             </div>
+          </div>
+
+          {/* Status & Penjadwalan Publikasi Otomatis */}
+          <div className="p-4 rounded-xl bg-amber-50/80 border border-amber-200 space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="block font-black uppercase tracking-wider text-sky-950 text-[11px] font-mono flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-amber-600" />
+                Status &amp; Penjadwalan Publikasi Otomatis
+              </label>
+              <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded uppercase ${
+                status === 'published' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
+                status === 'pending' ? 'bg-amber-200 text-amber-900 border border-amber-400' :
+                'bg-slate-200 text-slate-700'
+              }`}>
+                {status === 'published' ? 'Terbit Langsung' : status === 'pending' ? 'Pending (Terjadwal)' : 'Draf'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => setStatus('published')}
+                className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-left flex flex-col cursor-pointer ${
+                  status === 'published'
+                    ? 'bg-emerald-600 text-white border-emerald-700 shadow-xs'
+                    : 'bg-white text-slate-700 border-slate-200 hover:border-emerald-300'
+                }`}
+              >
+                <span>🟢 Published</span>
+                <span className="text-[10px] font-normal opacity-85 mt-0.5">Terbitkan langsung ke portal</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setStatus('pending');
+                  if (!scheduledPublishAt) {
+                    const future = new Date(Date.now() + 60 * 60 * 1000);
+                    setScheduledPublishAt(future.toISOString().slice(0, 16));
+                  }
+                }}
+                className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-left flex flex-col cursor-pointer ${
+                  status === 'pending'
+                    ? 'bg-amber-500 text-sky-950 border-amber-600 shadow-xs ring-2 ring-amber-300 font-black'
+                    : 'bg-white text-slate-700 border-slate-200 hover:border-amber-300'
+                }`}
+              >
+                <span>⏳ Pending (Terjadwal)</span>
+                <span className="text-[10px] font-normal opacity-85 mt-0.5">Terbit otomatis pada waktu tertentu</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setStatus('draft')}
+                className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-left flex flex-col cursor-pointer ${
+                  status === 'draft'
+                    ? 'bg-slate-800 text-white border-slate-900 shadow-xs'
+                    : 'bg-white text-slate-700 border-slate-200 hover:border-slate-400'
+                }`}
+              >
+                <span>📝 Draft</span>
+                <span className="text-[10px] font-normal opacity-85 mt-0.5">Simpan draf naskah internal</span>
+              </button>
+            </div>
+
+            {status === 'pending' && (
+              <div className="p-3 bg-white rounded-xl border border-amber-300 space-y-2 animate-in fade-in duration-200">
+                <label className="block text-[11px] font-bold text-sky-950">
+                  Pilih Tanggal &amp; Jam Publikasi Otomatis (WIB):
+                </label>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                  <input
+                    type="datetime-local"
+                    required={status === 'pending'}
+                    value={scheduledPublishAt}
+                    onChange={(e) => setScheduledPublishAt(e.target.value)}
+                    className="px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-800 font-mono font-bold focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                  <span className="text-[11px] text-amber-900 font-mono font-bold">
+                    {scheduledPublishAt && new Date(scheduledPublishAt) > new Date()
+                      ? `⏳ Terjadwal dalam ${Math.max(1, Math.round((new Date(scheduledPublishAt).getTime() - Date.now()) / (1000 * 60)))} menit ke depan`
+                      : '⚠️ Tentukan waktu publikasi di masa mendatang'}
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-600 leading-tight">
+                  Status artikel akan berlabel <strong>'Pending'</strong> dan otomatis berubah menjadi <strong>'Published'</strong> serta muncul di portal utama saat waktu tiba.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Footer Submit */}

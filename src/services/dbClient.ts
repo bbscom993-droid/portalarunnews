@@ -64,6 +64,8 @@ export function parseArticleData(data: any): NewsArticle {
     isTrending: Boolean(data.isTrending),
     trendingRank: data.trendingRank,
     reactions: data.reactions,
+    status: data.status || 'published',
+    scheduledPublishAt: data.scheduledPublishAt || undefined,
   };
 }
 

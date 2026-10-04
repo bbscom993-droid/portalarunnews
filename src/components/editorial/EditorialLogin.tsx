@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { EditorialUser, SiteSettings } from '../../types';
 import { DEFAULT_EDITORIAL_USERS } from '../../data/newsData';
+import { ModernGraffitiLogo } from '../ModernGraffitiLogo';
 
 interface EditorialLoginProps {
   siteSettings?: SiteSettings;
@@ -546,12 +547,13 @@ export const EditorialLogin: React.FC<EditorialLoginProps> = ({
                 >
                   Sistem CMS Redaksi
                 </span>
-                <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-white mb-3">
-                  {siteSettings?.portalName || 'ARUN NEWS'}
-                </h2>
-                <p className="text-xs text-slate-200 leading-relaxed font-medium">
-                  {siteSettings?.portalTagline || 'Jembatan Informasi Nusantara'}
-                </p>
+                <div className="mb-3">
+                  <ModernGraffitiLogo 
+                    size="lg"
+                    customText={siteSettings?.portalName || 'ARUN NEWS'}
+                    tagline={siteSettings?.portalTagline || 'Jembatan Informasi Nusantara'}
+                  />
+                </div>
               </div>
 
               {loginTheme.showQuickDemoAccounts !== false && (

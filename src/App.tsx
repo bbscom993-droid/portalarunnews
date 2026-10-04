@@ -60,6 +60,7 @@ import { AdBanner } from './components/AdBanner';
 import { SavedArticlesDrawer } from './components/SavedArticlesDrawer';
 import { NewsletterBanner } from './components/NewsletterBanner';
 import { WartaNotificationWidget } from './components/WartaNotificationWidget';
+import { TerkiniGoogleSection } from './components/TerkiniGoogleSection';
 import { Footer } from './components/Footer';
 import { BoxRedaksiModal } from './components/editorial/BoxRedaksiModal';
 import { 
@@ -559,6 +560,40 @@ export default function App() {
     }
   }, [currentHash, articles]);
 
+  // Automated background scheduler for scheduled publication
+  // Changes status 'pending' to 'published' automatically when scheduledPublishAt <= now
+  useEffect(() => {
+    const checkScheduledArticles = () => {
+      const now = new Date();
+      setArticles((prev) => {
+        let changed = false;
+        const updated = prev.map((art) => {
+          if (art.status === 'pending' && art.scheduledPublishAt) {
+            const schedTime = new Date(art.scheduledPublishAt).getTime();
+            if (schedTime <= now.getTime()) {
+              changed = true;
+              return {
+                ...art,
+                status: 'published' as const,
+                publishedAt: 'Baru Saja Terbit • Redaksi',
+              };
+            }
+          }
+          return art;
+        });
+        if (changed) {
+          showToast('📰 Berita terjadwal telah otomatis terbit (Status: Published)!');
+          return updated;
+        }
+        return prev;
+      });
+    };
+
+    checkScheduledArticles();
+    const interval = setInterval(checkScheduledArticles, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
   const handleResetAllData = () => {
     if (window.confirm('Reset semua artikel dan pengaturan ke bawaan awal? Tindakan ini tidak dapat dibatalkan.')) {
       setArticles(INITIAL_ARTICLES);
@@ -841,9 +876,9 @@ export default function App() {
     return [...articles].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 5);
   }, [articles]);
 
-  // Filtered & Sorted Articles
+  // Filtered & Sorted Articles (Public feed only displays published articles)
   const filteredArticles = useMemo(() => {
-    let list = [...articles];
+    let list = articles.filter((a) => !a.status || a.status === 'published');
 
     // Filter by Category
     if (selectedCategory !== 'all') {
@@ -1390,6 +1425,9 @@ export default function App() {
                 />
               )}
 
+              {/* Feature: Terkini dari Google via Search Grounding */}
+              <TerkiniGoogleSection />
+
               {/* Feature 2: Sidebar Banner Ad */}
               <AdBanner
                 type="sidebar"
@@ -1531,14 +1569,21 @@ export default function App() {
         />
       )}
 
-      {/* Bookmarks & Reading List Drawer */}
+      {/* Bookmarks & Reading History Drawer */}
       <SavedArticlesDrawer
         isOpen={isSavedDrawerOpen}
         onClose={() => setIsSavedDrawerOpen(false)}
         savedArticles={savedArticlesList}
+        readArticleIds={readArticleIds}
+        allArticles={articles}
         onSelectArticle={(art) => setSelectedArticleForModal(art)}
         onRemoveSaved={handleRemoveSaved}
         onClearAll={handleClearAllSaved}
+        onClearReadHistory={() => {
+          setReadArticleIds([]);
+          localStorage.removeItem('wartakini_read_articles');
+          showToast('Riwayat baca telah dikosongkan.');
+        }}
       />
 
       {/* Floating Smooth Scroll to Top Button */}

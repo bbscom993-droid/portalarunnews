@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  scroll-behavior: smooth;
+}
+
+/* Custom smooth-scroll transition utilities */
+.scroll-smooth {
+  scroll-behavior: smooth !important;
+}
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: #f0f9ff; /* sky-50 */
+    color: #0f172a; /* slate-900 */
+  }
+  
+  h1, h2, h3, .font-serif-headline {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    letter-spacing: -0.02em;
+  }
+
+  .font-editorial {
+    font-family: 'Merriweather', Georgia, serif;
+  }
+
+  .font-brand {
+    font-family: 'Calibri', 'Segoe UI', Arial, sans-serif;
+  }
+
+  .font-brand-cinzel {
+    font-family: 'Cinzel', serif;
+  }
+}
+
+/* Custom Bento scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: #e0f2fe;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #38bdf8;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0284c7;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+

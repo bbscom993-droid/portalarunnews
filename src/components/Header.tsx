@@ -24,9 +24,7 @@ import {
   Train,
   Tag,
   Megaphone,
-  Minimize2,
-  Sun,
-  Moon
+  Minimize2
 } from 'lucide-react';
 import { Category, SiteSettings } from '../types';
 import { ModernGraffitiLogo } from './ModernGraffitiLogo';
@@ -40,8 +38,6 @@ interface HeaderProps {
   savedCount: number;
   onOpenSavedDrawer: () => void;
   onOpenCitizenModal?: () => void;
-  fontSize: 'normal' | 'large' | 'xlarge';
-  onChangeFontSize: (size: 'normal' | 'large' | 'xlarge') => void;
   siteSettings?: SiteSettings;
   isCompactMode?: boolean;
   onToggleCompactMode?: () => void;
@@ -76,8 +72,6 @@ export const Header: React.FC<HeaderProps> = ({
   savedCount,
   onOpenSavedDrawer,
   onOpenCitizenModal,
-  fontSize,
-  onChangeFontSize,
   siteSettings,
   isCompactMode = false,
   onToggleCompactMode,
@@ -193,43 +187,6 @@ export const Header: React.FC<HeaderProps> = ({
               <Search className="w-5 h-5" />
             </button>
 
-            {/* Font Size Adjuster Pill */}
-            <div className="hidden sm:flex items-center bg-white rounded-xl p-0.5 border border-sky-200 text-xs shadow-2xs">
-              <button
-                onClick={() => onChangeFontSize('normal')}
-                className={`px-2 py-1 rounded-lg font-bold transition-all ${
-                  fontSize === 'normal' 
-                    ? 'bg-sky-900 text-white shadow-xs' 
-                    : 'text-sky-800 hover:text-sky-950'
-                }`}
-                title="Ukuran Font Normal"
-              >
-                A
-              </button>
-              <button
-                onClick={() => onChangeFontSize('large')}
-                className={`px-2 py-1 rounded-lg font-bold transition-all text-sm ${
-                  fontSize === 'large' 
-                    ? 'bg-sky-900 text-white shadow-xs' 
-                    : 'text-sky-800 hover:text-sky-950'
-                }`}
-                title="Ukuran Font Besar"
-              >
-                A+
-              </button>
-              <button
-                onClick={() => onChangeFontSize('xlarge')}
-                className={`px-2 py-1 rounded-lg font-extrabold transition-all text-base ${
-                  fontSize === 'xlarge' 
-                    ? 'bg-sky-900 text-white shadow-xs' 
-                    : 'text-sky-800 hover:text-sky-950'
-                }`}
-                title="Ukuran Font Ekstra Besar"
-              >
-                A++
-              </button>
-            </div>
-
             {/* Lapor Warga Button */}
             {onOpenCitizenModal && siteSettings?.moduleToggles?.allowCitizenJournalism !== false && (
               <button
@@ -266,28 +223,6 @@ export const Header: React.FC<HeaderProps> = ({
                 </span>
               </button>
             )}
-
-            {/* Global Theme Toggle Button (Light / Dark Mode) */}
-            <button
-              id="header-theme-toggle-btn"
-              type="button"
-              onClick={toggleTheme}
-              className="p-2 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-bold text-sky-950 bg-white hover:bg-yellow-50 border border-yellow-400/80 hover:border-yellow-400 transition-all shadow-xs cursor-pointer active:scale-95 flex items-center justify-center gap-1.5 group"
-              title={theme === 'dark' ? 'Ganti ke Mode Terang (Light Mode)' : 'Ganti ke Mode Gelap (Dark Mode)'}
-              aria-label="Toggle Mode Gelap atau Terang"
-            >
-              {theme === 'dark' ? (
-                <>
-                  <Sun className="w-4 h-4 text-amber-500 fill-amber-400/50 group-hover:rotate-45 transition-transform" />
-                  <span className="hidden xl:inline text-[11px] text-amber-800 font-bold">Terang</span>
-                </>
-              ) : (
-                <>
-                  <Moon className="w-4 h-4 text-sky-700 fill-sky-200 group-hover:-rotate-12 transition-transform" />
-                  <span className="hidden xl:inline text-[11px] text-sky-800 font-bold">Gelap</span>
-                </>
-              )}
-            </button>
 
             {/* Bookmarks Counter Button - Responsive on Mobile */}
             <button
@@ -533,33 +468,6 @@ export const Header: React.FC<HeaderProps> = ({
                   </button>
                 );
               })}
-            </div>
-          </div>
-
-          {/* Quick Actions & Font Switcher on Mobile */}
-          <div className="pt-3 border-t border-sky-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-sky-300">
-            <div className="flex items-center justify-between w-full sm:w-auto gap-2">
-              <span className="font-bold">Ukuran Font:</span>
-              <div className="flex items-center gap-1 bg-sky-900 p-1 rounded-xl border border-sky-800">
-                <button 
-                  onClick={() => onChangeFontSize('normal')}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors ${fontSize === 'normal' ? 'bg-yellow-400 text-sky-950 font-black' : 'text-sky-200'}`}
-                >
-                  A
-                </button>
-                <button 
-                  onClick={() => onChangeFontSize('large')}
-                  className={`px-3 py-1 rounded-lg text-sm font-bold transition-colors ${fontSize === 'large' ? 'bg-yellow-400 text-sky-950 font-black' : 'text-sky-200'}`}
-                >
-                  A+
-                </button>
-                <button 
-                  onClick={() => onChangeFontSize('xlarge')}
-                  className={`px-3 py-1 rounded-lg text-base font-extrabold transition-colors ${fontSize === 'xlarge' ? 'bg-yellow-400 text-sky-950 font-black' : 'text-sky-200'}`}
-                >
-                  A++
-                </button>
-              </div>
             </div>
           </div>
         </div>

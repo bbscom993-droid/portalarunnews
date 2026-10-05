@@ -240,7 +240,7 @@ export const AiNewsAssistant: React.FC<AiNewsAssistantProps> = ({
   const handleToggleVoiceInput = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert('Peramban Anda belum mendukung input suara Web Speech API.');
+      console.warn('Peramban Anda belum mendukung input suara Web Speech API.');
       return;
     }
 

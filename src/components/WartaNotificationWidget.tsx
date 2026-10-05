@@ -51,13 +51,9 @@ export const WartaNotificationWidget: React.FC<WartaNotificationWidgetProps> = (
     }
 
     if (permission === 'denied') {
-      alert(
-        'Akses notifikasi telah diblokir di peramban Anda.\n\n' +
-        'Untuk mengaktifkan kembali:\n' +
-        '1. Klik ikon gembok/setelan di sebelah alamat URL peramban Anda.\n' +
-        '2. Ubah izin "Notifikasi" (Notification) menjadi "Izinkan" (Allow).\n' +
-        '3. Muat ulang halaman ini.'
-      );
+      if (onShowToast) {
+        onShowToast('Izin notifikasi diblokir di peramban. Ubah izin di setelan peramban untuk mengaktifkan warta kilat.');
+      }
       return;
     }
 

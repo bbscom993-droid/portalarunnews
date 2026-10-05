@@ -258,7 +258,7 @@ export const EditorialDashboard: React.FC<EditorialDashboardProps> = ({
   const handleSaveSchedule = (e: React.FormEvent) => {
     e.preventDefault();
     if (!scheduleForm.operator || !scheduleForm.routeFrom || !scheduleForm.routeTo) {
-      alert('Mohon lengkapi nama operator, kota asal, dan kota tujuan.');
+      showToast('Mohon lengkapi nama operator, kota asal, dan kota tujuan.');
       return;
     }
 
@@ -405,7 +405,7 @@ export const EditorialDashboard: React.FC<EditorialDashboardProps> = ({
   const handleSendManualBroadcast = (e: React.FormEvent) => {
     e.preventDefault();
     if (!broadcastForm.title.trim() || !broadcastForm.message.trim()) {
-      alert('Mohon masukkan judul dan isi pesan siaran notifikasi.');
+      showToast('Mohon masukkan judul dan isi pesan siaran notifikasi.');
       return;
     }
 

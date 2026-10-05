@@ -71,6 +71,7 @@ export const CitizenJournalismModal: React.FC<CitizenJournalismModalProps> = ({
   const [attachedFiles, setAttachedFiles] = useState<UploadedFileItem[]>(savedDraft?.attachedFiles || []);
 
   const [submitted, setSubmitted] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [lastAutoSavedTime, setLastAutoSavedTime] = useState<string | null>(
     savedDraft?.savedAt ? new Date(savedDraft.savedAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : null
@@ -151,7 +152,7 @@ export const CitizenJournalismModal: React.FC<CitizenJournalismModalProps> = ({
 
     for (const file of filesArray) {
       if (attachedFiles.length + newItems.length >= 5) {
-        alert('Maksimal 5 file foto/video yang dapat dilampirkan sekaligus.');
+        setFormError('Maksimal 5 file foto/video yang dapat dilampirkan sekaligus.');
         break;
       }
 
@@ -159,7 +160,7 @@ export const CitizenJournalismModal: React.FC<CitizenJournalismModalProps> = ({
       const isImage = file.type.startsWith('image/') || /\.(jpg|jpeg|png|webp|gif)$/i.test(file.name);
 
       if (!isImage && !isVideo) {
-        alert(`Format file "${file.name}" tidak didukung. Harap unggah Foto (JPG, PNG, WebP, GIF) atau Video (MP4, MOV, AVI, WebM).`);
+        setFormError(`Format file "${file.name}" tidak didukung. Harap unggah Foto (JPG, PNG, WebP, GIF) atau Video (MP4, MOV, AVI, WebM).`);
         continue;
       }
 
@@ -211,8 +212,9 @@ export const CitizenJournalismModal: React.FC<CitizenJournalismModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
     if (!reporterName.trim() || !title.trim() || !description.trim()) {
-      alert('Harap lengkapi semua bidang wajib (*).');
+      setFormError('Harap lengkapi semua bidang wajib (*).');
       return;
     }
 
@@ -342,6 +344,18 @@ export const CitizenJournalismModal: React.FC<CitizenJournalismModalProps> = ({
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+                  {formError && (
+                    <div className="p-3 rounded-xl bg-rose-50 border border-rose-300 text-rose-800 text-xs font-bold flex items-center justify-between animate-in fade-in">
+                      <span>{formError}</span>
+                      <button
+                        type="button"
+                        onClick={() => setFormError(null)}
+                        className="text-rose-600 hover:text-rose-900 font-black ml-2"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
                   
                   {/* Nama pelapor */}
                   <div>

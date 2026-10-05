@@ -225,6 +225,7 @@ Hasil harus dikembalikan dalam bentuk array JSON berisi tepat 3 string kalimat r
   // API ROUTE: 'Terkini dari Google' via Google Search Grounding
   // -------------------------------------------------------------
   let cachedGoogleNews: { data: any; timestamp: number } | null = null;
+  let googleNewsCooldownUntil: number = 0;
 
   const getFallbackGoogleNews = () => {
     return {
@@ -292,9 +293,15 @@ Hasil harus dikembalikan dalam bentuk array JSON berisi tepat 3 string kalimat r
       const forceRefresh = req.query.refresh === "true";
       const now = Date.now();
 
-      // Return cache if valid (< 4 minutes) and not force refresh
-      if (!forceRefresh && cachedGoogleNews && (now - cachedGoogleNews.timestamp < 4 * 60 * 1000)) {
+      // Return cache if valid (< 5 minutes) and not force refresh
+      if (!forceRefresh && cachedGoogleNews && (now - cachedGoogleNews.timestamp < 5 * 60 * 1000)) {
         return res.json({ ...cachedGoogleNews.data, fromCache: true });
+      }
+
+      // If in quota cooldown period (due to recent 429 quota exhaustion), serve high-fidelity curated news
+      if (now < googleNewsCooldownUntil && !forceRefresh) {
+        const fallbackData = cachedGoogleNews?.data || getFallbackGoogleNews();
+        return res.json({ ...fallbackData, isAiGrounded: false, fromCache: true });
       }
 
       if (!ai) {
@@ -407,12 +414,31 @@ PENTING:
 
       res.json(result);
     } catch (error: any) {
-      console.error("Google search grounding error in /api/terkini-google:", error);
+      const isQuotaError = 
+        error?.status === 429 || 
+        error?.code === 429 || 
+        error?.message?.includes("429") || 
+        error?.message?.includes("quota") || 
+        error?.message?.includes("RESOURCE_EXHAUSTED");
+
+      if (isQuotaError) {
+        // Set a 15-minute cooldown for quota limits so the server avoids hitting rate limits repeatedly
+        googleNewsCooldownUntil = Date.now() + 15 * 60 * 1000;
+        console.warn("Gemini Google search grounding quota limit reached (429). Serving curated national news fallback with 15-min cooldown.");
+      } else {
+        console.warn("Google search grounding error in /api/terkini-google, using curated fallback:", error?.message || error);
+      }
+
       const fallbackData = getFallbackGoogleNews();
+      cachedGoogleNews = {
+        data: fallbackData,
+        timestamp: Date.now(),
+      };
+
       res.json({
         ...fallbackData,
         isAiGrounded: false,
-        error: error.message || "Gagal mengambil data penelusuran langsung",
+        fromCache: true,
       });
     }
   });

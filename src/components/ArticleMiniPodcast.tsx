@@ -189,7 +189,7 @@ export const ArticleMiniPodcast: React.FC<ArticleMiniPodcastProps> = ({
     e.preventDefault();
 
     if (!isSupported) {
-      alert('Browser Anda tidak mendukung Web Speech API untuk pemutar audio podcast.');
+      console.warn('Browser tidak mendukung Web Speech API untuk pemutar audio podcast.');
       return;
     }
 

@@ -24,8 +24,6 @@ import {
   Type,
   FileText,
   Printer,
-  Moon,
-  Sun,
   Coffee,
   Download,
   Loader2,
@@ -224,44 +222,29 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
   const [lineSpacing, setLineSpacing] = useState<'normal' | 'relaxed' | 'loose'>('relaxed');
   const [copiedDraft, setCopiedDraft] = useState(false);
 
-  // Independent Reading Theme setting: 'light' | 'warm' | 'dark'
+  // Independent Reading Theme setting: 'light' | 'warm'
   // 'warm' is Mode Baca Nyaman (Sepia / Warm) for soothing blue-light filtered reading
-  const [readingTheme, setReadingTheme] = useState<'light' | 'warm' | 'dark'>(() => {
+  const [readingTheme, setReadingTheme] = useState<'light' | 'warm'>(() => {
     try {
       const savedTheme = localStorage.getItem('wartakini_reader_reading_theme');
-      if (savedTheme === 'warm' || savedTheme === 'dark' || savedTheme === 'light') {
-        return savedTheme;
+      if (savedTheme === 'warm') {
+        return 'warm';
       }
-      const savedNight = localStorage.getItem('wartakini_reader_night_mode');
-      if (savedNight === 'true') return 'dark';
       return 'light';
     } catch {
       return 'light';
     }
   });
 
-  const isNightMode = readingTheme === 'dark';
+  const isNightMode = false;
   const isWarmMode = readingTheme === 'warm';
-
-  const toggleNightMode = () => {
-    setReadingTheme((prev) => {
-      const next = prev === 'dark' ? 'light' : 'dark';
-      try {
-        localStorage.setItem('wartakini_reader_reading_theme', next);
-        localStorage.setItem('wartakini_reader_night_mode', String(next === 'dark'));
-      } catch (e) {
-        console.error('Failed to save reading theme:', e);
-      }
-      return next;
-    });
-  };
 
   const toggleWarmMode = () => {
     setReadingTheme((prev) => {
       const next = prev === 'warm' ? 'light' : 'warm';
       try {
         localStorage.setItem('wartakini_reader_reading_theme', next);
-        localStorage.setItem('wartakini_reader_night_mode', 'false');
+        localStorage.removeItem('wartakini_reader_night_mode');
       } catch (e) {
         console.error('Failed to save warm mode setting:', e);
       }
@@ -269,11 +252,11 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
     });
   };
 
-  const setSpecificTheme = (theme: 'light' | 'warm' | 'dark') => {
+  const setSpecificTheme = (theme: 'light' | 'warm') => {
     setReadingTheme(theme);
     try {
       localStorage.setItem('wartakini_reader_reading_theme', theme);
-      localStorage.setItem('wartakini_reader_night_mode', String(theme === 'dark'));
+      localStorage.removeItem('wartakini_reader_night_mode');
     } catch (e) {
       console.error('Failed to save reading theme:', e);
     }
@@ -829,8 +812,8 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
   };
 
   const handleToggleTTS = () => {
-    if (!('speechSynthesis' in window)) {
-      alert('Browser Anda tidak mendukung Web Speech API untuk fitur pembacaan suara artikel.');
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      console.warn('Browser tidak mendukung Web Speech API untuk pembacaan suara artikel.');
       return;
     }
 
@@ -1354,9 +1337,9 @@ ${article.tags.map(t => `#${t}`).join(', ')}
 
   const getFontSizeClass = () => {
     switch (localFontSize) {
-      case 'large': return 'text-lg sm:text-xl';
-      case 'xlarge': return 'text-xl sm:text-2xl';
-      default: return 'text-base sm:text-lg';
+      case 'large': return 'text-lg sm:text-xl md:text-2xl';
+      case 'xlarge': return 'text-xl sm:text-2xl md:text-3xl';
+      default: return 'text-base sm:text-lg md:text-[18.5px]';
     }
   };
 
@@ -1364,7 +1347,7 @@ ${article.tags.map(t => `#${t}`).join(', ')}
     switch (localFontSize) {
       case 'large': return 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl';
       case 'xlarge': return 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl';
-      default: return 'text-xl sm:text-2xl md:text-3xl lg:text-4xl';
+      default: return 'text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl';
     }
   };
 
@@ -1372,7 +1355,7 @@ ${article.tags.map(t => `#${t}`).join(', ')}
     switch (localFontSize) {
       case 'large': return 'text-base sm:text-lg md:text-xl';
       case 'xlarge': return 'text-lg sm:text-xl md:text-2xl';
-      default: return 'text-sm sm:text-base md:text-lg';
+      default: return 'text-sm sm:text-base md:text-lg lg:text-xl';
     }
   };
 
@@ -1439,16 +1422,16 @@ ${article.tags.map(t => `#${t}`).join(', ')}
 
       <div
         id="article-reader-modal"
-        className="fixed inset-0 z-50 bg-sky-950/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto scroll-smooth"
+        className="fixed inset-0 z-50 bg-sky-950/85 backdrop-blur-md flex items-center justify-center p-0 sm:p-3 md:p-6 overflow-y-auto scroll-smooth"
         onClick={handleAttemptClose}
       >
       <div
-        className={`rounded-2xl max-w-4xl w-full max-h-[94vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 my-auto relative transition-colors duration-300 ${
+        className={`rounded-none sm:rounded-2xl max-w-full sm:max-w-4xl md:max-w-5xl xl:max-w-6xl w-full h-full sm:h-auto sm:max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 my-auto relative transition-colors duration-300 ${
           isNightMode 
-            ? 'bg-slate-950 text-slate-100 border-2 border-yellow-500/80 shadow-slate-950/80' 
+            ? 'bg-slate-950 text-slate-100 border-0 sm:border-2 border-yellow-500/80 shadow-slate-950/80' 
             : isWarmMode
-            ? 'bg-[#fbf4e6] text-[#382b1d] border-2 border-amber-400 shadow-amber-950/20'
-            : 'bg-white text-slate-900 border-2 border-yellow-400'
+            ? 'bg-[#fbf4e6] text-[#382b1d] border-0 sm:border-2 border-amber-400 shadow-amber-950/20'
+            : 'bg-white text-slate-900 border-0 sm:border-2 border-yellow-400'
         }`}
         onClick={(e) => e.stopPropagation()}
       >
@@ -1524,37 +1507,6 @@ ${article.tags.map(t => `#${t}`).join(', ')}
                 </button>
               </div>
 
-              {/* Font Size Adjuster */}
-              <div className={`flex items-center p-0.5 rounded-xl border text-xs ${
-                isNightMode ? 'bg-slate-800 border-slate-700' : isWarmMode ? 'bg-[#f8f1e2] border-[#dfcfad]' : 'bg-white border-slate-300'
-              }`}>
-                <button
-                  type="button"
-                  onClick={() => setLocalFontSize(localFontSize === 'xlarge' ? 'large' : 'normal')}
-                  disabled={localFontSize === 'normal'}
-                  className={`px-2 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed ${
-                    isNightMode ? 'hover:bg-slate-700 text-slate-200' : 'hover:bg-slate-100 text-slate-700'
-                  }`}
-                  title="Perkecil Font"
-                >
-                  A-
-                </button>
-                <span className="px-1.5 text-[11px] font-mono font-bold">
-                  {localFontSize === 'normal' ? '100%' : localFontSize === 'large' ? '125%' : '150%'}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setLocalFontSize(localFontSize === 'normal' ? 'large' : 'xlarge')}
-                  disabled={localFontSize === 'xlarge'}
-                  className={`px-2 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed ${
-                    isNightMode ? 'hover:bg-slate-700 text-slate-200' : 'hover:bg-slate-100 text-slate-700'
-                  }`}
-                  title="Perbesar Font"
-                >
-                  A+
-                </button>
-              </div>
-
               {/* Mode Baca Nyaman (Sepia/Warm) Button in Focus Mode */}
               <button
                 type="button"
@@ -1562,8 +1514,6 @@ ${article.tags.map(t => `#${t}`).join(', ')}
                 className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                   isWarmMode 
                     ? 'bg-amber-300 text-amber-950 border-amber-400 font-black shadow-xs ring-1 ring-amber-500' 
-                    : isNightMode
-                    ? 'bg-slate-800 hover:bg-slate-700 text-amber-200 border-slate-700'
                     : 'bg-white hover:bg-amber-50 text-amber-900 border-amber-200'
                 }`}
                 title={isWarmMode ? 'Matikan Mode Baca Nyaman (Kembali ke Normal)' : 'Aktifkan Mode Baca Nyaman (Sepia/Warm) — Lembut di mata untuk membaca lama'}
@@ -1571,22 +1521,6 @@ ${article.tags.map(t => `#${t}`).join(', ')}
               >
                 <Coffee className="w-3.5 h-3.5 text-amber-700" />
                 <span className="hidden sm:inline">Nyaman</span>
-              </button>
-
-              {/* Night / Light Mode Toggle */}
-              <button
-                type="button"
-                onClick={toggleNightMode}
-                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition-colors cursor-pointer ${
-                  isNightMode 
-                    ? 'bg-amber-400 text-slate-950 border-amber-500 font-black' 
-                    : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300'
-                }`}
-                title={isNightMode ? 'Beralih ke Mode Terang' : 'Beralih ke Mode Malam'}
-                aria-label="Mode Tampilan"
-              >
-                {isNightMode ? <Sun className="w-3.5 h-3.5 text-slate-950 fill-current" /> : <Moon className="w-3.5 h-3.5 text-slate-700" />}
-                <span className="hidden sm:inline">{isNightMode ? 'Terang' : 'Malam'}</span>
               </button>
 
               {/* Exit Focus Mode Button */}
@@ -1618,320 +1552,292 @@ ${article.tags.map(t => `#${t}`).join(', ')}
         ) : (
           <>
             {/* Sticky Modal Header Bar */}
-            <div className={`flex items-center justify-between px-4 sm:px-6 py-3 border-b z-20 flex-shrink-0 transition-colors ${
+            <div className={`flex items-center justify-between px-3 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 border-b z-20 flex-shrink-0 transition-colors ${
               isNightMode 
                 ? 'bg-slate-900 text-slate-100 border-slate-800' 
                 : isWarmMode
                 ? 'bg-[#43311f] text-[#fbf4e6] border-[#5a422a]'
                 : 'bg-sky-950 text-white border-sky-800'
             }`}>
-              <div className="flex items-center gap-2 flex-wrap">
-            <span className="bg-yellow-400 text-sky-950 font-black text-[11px] sm:text-xs px-2.5 py-0.5 rounded-md uppercase tracking-wider border border-yellow-500 font-mono">
-              {article.categoryLabel}
-            </span>
-            <div 
-              className="flex items-center gap-1.5 bg-amber-400 text-sky-950 border border-yellow-500 text-[10px] sm:text-xs font-mono font-black px-2.5 py-0.5 rounded-md shadow-2xs"
-              title={`Estimasi waktu membaca berdasarkan ${readingTimeInfo.wordCount} kata`}
-            >
-              <Clock className="w-3 h-3 text-sky-950 flex-shrink-0" />
-              <span>{readingTimeInfo.formatted} ({readingTimeInfo.wordCount} kata)</span>
-            </div>
-            <span className={`text-xs font-mono hidden md:inline ${isNightMode ? 'text-slate-400' : 'text-sky-200'}`}>
-              {article.publishedAt}
-            </span>
-            <div className={`flex items-center gap-1.5 text-[10px] sm:text-xs font-mono font-bold px-2.5 py-0.5 rounded-md shadow-2xs ${
-              isNightMode ? 'bg-slate-800 text-yellow-300 border-slate-700' : 'bg-sky-900/90 text-yellow-300 border-sky-700/80'
-            }`}>
-              <BookOpen className="w-3 h-3 text-yellow-400" />
-              <span>{scrollProgress === 100 ? 'Selesai Membaca 🎉' : `${scrollProgress}% Membaca`}</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* Quick Header 'Mode Baca Nyaman' (Sepia/Warm) Button */}
-            <button
-              id="toggle-warm-mode-header-btn"
-              type="button"
-              onClick={toggleWarmMode}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
-                isWarmMode
-                  ? 'bg-amber-300 text-amber-950 border-amber-400 font-black shadow-amber-300/30 ring-1 ring-amber-500'
-                  : isNightMode
-                  ? 'bg-slate-800 hover:bg-slate-700 text-amber-200 hover:text-amber-100 border-slate-700'
-                  : 'bg-sky-900 hover:bg-sky-800 text-amber-200 hover:text-amber-100 border-sky-700'
-              }`}
-              title={
-                isWarmMode
-                  ? 'Matikan Mode Baca Nyaman (Sepia/Warm) — Kembali ke Tampilan Normal'
-                  : 'Aktifkan Mode Baca Nyaman (Sepia/Warm) — Redakan ketegangan mata & filter cahaya biru untuk membaca santai'
-              }
-              aria-label="Mode Baca Nyaman"
-            >
-              <Coffee className="w-3.5 h-3.5 text-amber-300" />
-              <span className="hidden md:inline">Mode Nyaman</span>
-              {isWarmMode && <span className="w-1.5 h-1.5 rounded-full bg-amber-700 animate-pulse" />}
-            </button>
-
-            {/* Quick Header Night Mode Toggle Button */}
-            <button
-              id="toggle-night-mode-header-btn"
-              type="button"
-              onClick={toggleNightMode}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
-                isNightMode
-                  ? 'bg-amber-400 text-slate-950 border-amber-500 shadow-amber-400/20 font-black'
-                  : 'bg-sky-900 hover:bg-sky-800 text-sky-200 hover:text-white border-sky-700'
-              }`}
-              title={isNightMode ? 'Matikan Mode Malam (Night Mode)' : 'Aktifkan Mode Malam (Night Mode)'}
-              aria-label="Mode Malam"
-            >
-              {isNightMode ? <Sun className="w-3.5 h-3.5 text-slate-950 fill-slate-950" /> : <Moon className="w-3.5 h-3.5 text-yellow-300" />}
-              <span className="hidden md:inline">{isNightMode ? 'Mode Terang' : 'Mode Malam'}</span>
-            </button>
-
-            {/* Quick Header Focus Mode Toggle Button */}
-            <button
-              id="toggle-focus-mode-header-btn"
-              type="button"
-              onClick={() => setIsFocusMode(!isFocusMode)}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold transition-all border cursor-pointer shadow-2xs ${
-                isFocusMode
-                  ? 'bg-amber-400 text-slate-950 border-yellow-500 font-black shadow-amber-400/20'
-                  : 'bg-sky-900 hover:bg-sky-800 text-yellow-300 hover:text-yellow-200 border-sky-700'
-              }`}
-              title={isFocusMode ? 'Matikan Mode Fokus' : 'Aktifkan Mode Fokus (Sembunyikan Komentar, Share, & Rekomendasi)'}
-              aria-label="Mode Fokus"
-            >
-              {isFocusMode ? <EyeOff className="w-3.5 h-3.5 text-slate-950" /> : <Eye className="w-3.5 h-3.5 text-yellow-400" />}
-              <span className="hidden md:inline">{isFocusMode ? 'Fokus ON' : 'Mode Fokus'}</span>
-            </button>
-
-            {/* View Mode Toggle: Portal vs Draft Naskah */}
-            <div className={`hidden sm:flex items-center p-0.5 rounded-xl border ${
-              isNightMode ? 'bg-slate-800 border-slate-700' : 'bg-sky-900 border-sky-800'
-            }`}>
-              <button
-                onClick={() => setViewMode('portal')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 ${
-                  viewMode === 'portal'
-                    ? 'bg-yellow-400 text-sky-950 font-black'
-                    : 'text-sky-200 hover:text-white'
-                }`}
-              >
-                <BookOpen className="w-3.5 h-3.5" />
-                <span>Portal View</span>
-              </button>
-              <button
-                onClick={() => setViewMode('draft')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 ${
-                  viewMode === 'draft'
-                    ? 'bg-yellow-400 text-sky-950 font-black'
-                    : 'text-sky-200 hover:text-white'
-                }`}
-              >
-                <FileText className="w-3.5 h-3.5" />
-                <span>Draft Rapi</span>
-              </button>
-            </div>
-
-            {/* Listen to Article (Web Speech API Audio Button) */}
-            <div className="flex items-center gap-1">
-              <button
-                id="listen-to-article-btn"
-                onClick={handleToggleTTS}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border shadow-xs active:scale-95 cursor-pointer ${
-                  isPlayingAudio && !isPausedAudio
-                    ? 'bg-amber-400 text-sky-950 border-amber-500 shadow-amber-400/20'
-                    : isPlayingAudio && isPausedAudio
-                    ? 'bg-amber-200 text-sky-950 border-amber-400'
-                    : 'bg-yellow-400 text-sky-950 border-yellow-500 hover:bg-yellow-300'
-                }`}
-                title={
-                  isPlayingAudio
-                    ? isPausedAudio
-                      ? 'Lanjutkan Mendengarkan Artikel'
-                      : 'Jeda Suara Pembaca (Pause)'
-                    : 'Dengarkan Artikel (Text-to-Speech)'
-                }
-                aria-label="Dengarkan Artikel"
-              >
-                {isPlayingAudio && !isPausedAudio ? (
-                  <>
-                    <Pause className="w-3.5 h-3.5 fill-sky-950 text-sky-950" />
-                    {/* Animated sound wave bars */}
-                    <span className="flex items-center gap-0.5 h-3">
-                      <span className="w-0.5 bg-sky-950 animate-pulse h-full rounded-xs block" style={{ animationDelay: '0ms', animationDuration: '0.5s' }} />
-                      <span className="w-0.5 bg-sky-950 animate-pulse h-2/3 rounded-xs block" style={{ animationDelay: '150ms', animationDuration: '0.4s' }} />
-                      <span className="w-0.5 bg-sky-950 animate-pulse h-4/5 rounded-xs block" style={{ animationDelay: '300ms', animationDuration: '0.6s' }} />
-                    </span>
-                    <span>Jeda</span>
-                  </>
-                ) : isPlayingAudio && isPausedAudio ? (
-                  <>
-                    <Play className="w-3.5 h-3.5 fill-sky-950 text-sky-950" />
-                    <span>Lanjutkan</span>
-                  </>
-                ) : (
-                  <>
-                    <Headphones className="w-3.5 h-3.5 text-sky-950" />
-                    <span className="hidden sm:inline">Dengarkan Berita</span>
-                    <span className="sm:hidden">Dengar</span>
-                  </>
-                )}
-              </button>
-
-              {isPlayingAudio && (
-                <button
-                  id="stop-tts-btn"
-                  onClick={handleStopTTS}
-                  className="p-1.5 rounded-xl bg-sky-900 hover:bg-rose-900 text-rose-300 hover:text-white border border-sky-700 hover:border-rose-700 transition-colors cursor-pointer"
-                  title="Hentikan Suara (Stop)"
-                  aria-label="Hentikan Suara"
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                <span className="bg-yellow-400 text-sky-950 font-black text-[10px] sm:text-xs px-2 sm:px-2.5 py-0.5 rounded-md uppercase tracking-wider border border-yellow-500 font-mono">
+                  {article.categoryLabel}
+                </span>
+                <div 
+                  className="flex items-center gap-1 bg-amber-400 text-sky-950 border border-yellow-500 text-[10px] sm:text-xs font-mono font-black px-2 sm:px-2.5 py-0.5 rounded-md shadow-2xs"
+                  title={`Estimasi waktu membaca berdasarkan ${readingTimeInfo.wordCount} kata`}
                 >
-                  <VolumeX className="w-3.5 h-3.5" />
+                  <Clock className="w-3 h-3 text-sky-950 flex-shrink-0" />
+                  <span>{readingTimeInfo.formatted}</span>
+                </div>
+                <span className="text-xs font-mono hidden md:inline text-sky-200">
+                  {article.publishedAt}
+                </span>
+                <div className="hidden sm:flex items-center gap-1.5 text-[10px] sm:text-xs font-mono font-bold px-2 sm:px-2.5 py-0.5 rounded-md shadow-2xs bg-sky-900/90 text-yellow-300 border-sky-700/80">
+                  <BookOpen className="w-3 h-3 text-yellow-400" />
+                  <span>{scrollProgress === 100 ? 'Selesai 🎉' : `${scrollProgress}%`}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2">
+                {/* Quick Header 'Mode Baca Nyaman' (Sepia/Warm) Button */}
+                <button
+                  id="toggle-warm-mode-header-btn"
+                  type="button"
+                  onClick={toggleWarmMode}
+                  className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+                    isWarmMode
+                      ? 'bg-amber-300 text-amber-950 border-amber-400 font-black shadow-amber-300/30 ring-1 ring-amber-500'
+                      : isNightMode
+                      ? 'bg-slate-800 hover:bg-slate-700 text-amber-200 hover:text-amber-100 border-slate-700'
+                      : 'bg-sky-900 hover:bg-sky-800 text-amber-200 hover:text-amber-100 border-sky-700'
+                  }`}
+                  title={
+                    isWarmMode
+                      ? 'Matikan Mode Baca Nyaman (Sepia/Warm) — Kembali ke Tampilan Normal'
+                      : 'Aktifkan Mode Baca Nyaman (Sepia/Warm) — Redakan ketegangan mata & filter cahaya biru untuk membaca santai'
+                  }
+                  aria-label="Mode Baca Nyaman"
+                >
+                  <Coffee className="w-3.5 h-3.5 text-amber-300" />
+                  <span className="hidden sm:inline">Mode Nyaman</span>
+                  <span className="sm:hidden text-[11px]">Nyaman</span>
+                  {isWarmMode && <span className="w-1.5 h-1.5 rounded-full bg-amber-700 animate-pulse" />}
                 </button>
-              )}
-            </div>
 
-            {/* Quick Social Media Sharing Buttons (WhatsApp, Twitter, Facebook) */}
-            <div className="hidden sm:flex items-center gap-1.5 border-l border-sky-800 pl-2">
-              <a
-                href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`${getArticleShareText()}\n\n${getArticleShareUrl()}`)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all shadow-2xs cursor-pointer hover:scale-105 active:scale-95"
-                title="Bagikan artikel ini ke WhatsApp"
-                aria-label="Bagikan ke WhatsApp"
-              >
-                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/>
-                </svg>
-                <span className="hidden lg:inline">WA</span>
-              </a>
+                {/* Quick Header Focus Mode Toggle Button (Tablet & Web) */}
+                <button
+                  id="toggle-focus-mode-header-btn"
+                  type="button"
+                  onClick={() => setIsFocusMode(!isFocusMode)}
+                  className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold transition-all border cursor-pointer shadow-2xs bg-sky-900 hover:bg-sky-800 text-yellow-300 hover:text-yellow-200 border-sky-700"
+                  title={isFocusMode ? 'Matikan Mode Fokus' : 'Aktifkan Mode Fokus (Sembunyikan Komentar, Share, & Rekomendasi)'}
+                  aria-label="Mode Fokus"
+                >
+                  {isFocusMode ? <EyeOff className="w-3.5 h-3.5 text-slate-950" /> : <Eye className="w-3.5 h-3.5 text-yellow-400" />}
+                  <span className="hidden lg:inline">{isFocusMode ? 'Fokus ON' : 'Mode Fokus'}</span>
+                </button>
 
-              <a
-                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(getArticleShareText())}&url=${encodeURIComponent(getArticleShareUrl())}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-all shadow-2xs cursor-pointer hover:scale-105 active:scale-95 border border-slate-700"
-                title="Bagikan artikel ini ke Twitter / X"
-                aria-label="Bagikan ke Twitter / X"
-              >
-                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                </svg>
-                <span className="hidden lg:inline">X</span>
-              </a>
+                {/* View Mode Toggle: Portal vs Draft Naskah (Tablet & Web) */}
+                <div className="hidden md:flex items-center p-0.5 rounded-xl border bg-sky-900 border-sky-800">
+                  <button
+                    onClick={() => setViewMode('portal')}
+                    className={`px-2 py-0.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 ${
+                      viewMode === 'portal'
+                        ? 'bg-yellow-400 text-sky-950 font-black'
+                        : 'text-sky-200 hover:text-white'
+                    }`}
+                  >
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>Portal View</span>
+                  </button>
+                  <button
+                    onClick={() => setViewMode('draft')}
+                    className={`px-2 py-0.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 ${
+                      viewMode === 'draft'
+                        ? 'bg-yellow-400 text-sky-950 font-black'
+                        : 'text-sky-200 hover:text-white'
+                    }`}
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>Draft Rapi</span>
+                  </button>
+                </div>
 
-              <a
-                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(getArticleShareUrl())}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all shadow-2xs cursor-pointer hover:scale-105 active:scale-95"
-                title="Bagikan artikel ini ke Facebook"
-                aria-label="Bagikan ke Facebook"
-              >
-                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                </svg>
-                <span className="hidden lg:inline">FB</span>
-              </a>
+                {/* Listen to Article (Web Speech API Audio Button) */}
+                <div className="flex items-center gap-1">
+                  <button
+                    id="listen-to-article-btn"
+                    onClick={handleToggleTTS}
+                    className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl text-xs font-bold transition-all border shadow-xs active:scale-95 cursor-pointer ${
+                      isPlayingAudio && !isPausedAudio
+                        ? 'bg-amber-400 text-sky-950 border-amber-500 shadow-amber-400/20'
+                        : isPlayingAudio && isPausedAudio
+                        ? 'bg-amber-200 text-sky-950 border-amber-400'
+                        : 'bg-yellow-400 text-sky-950 border-yellow-500 hover:bg-yellow-300'
+                    }`}
+                    title={
+                      isPlayingAudio
+                        ? isPausedAudio
+                          ? 'Lanjutkan Mendengarkan Artikel'
+                          : 'Jeda Suara Pembaca (Pause)'
+                        : 'Dengarkan Artikel (Text-to-Speech)'
+                    }
+                    aria-label="Dengarkan Artikel"
+                  >
+                    {isPlayingAudio && !isPausedAudio ? (
+                      <>
+                        <Pause className="w-3.5 h-3.5 fill-sky-950 text-sky-950" />
+                        <span className="hidden sm:inline">Jeda</span>
+                      </>
+                    ) : isPlayingAudio && isPausedAudio ? (
+                      <>
+                        <Play className="w-3.5 h-3.5 fill-sky-950 text-sky-950" />
+                        <span className="hidden sm:inline">Lanjutkan</span>
+                      </>
+                    ) : (
+                      <>
+                        <Headphones className="w-3.5 h-3.5 text-sky-950" />
+                        <span className="hidden sm:inline">Dengarkan</span>
+                      </>
+                    )}
+                  </button>
 
-              {/* Salin Link Button in Header */}
-              <button
-                type="button"
-                onClick={handleCopyLink}
-                className={`relative flex items-center gap-1 px-2.5 py-1 rounded-xl font-bold text-xs transition-all shadow-2xs cursor-pointer hover:scale-105 active:scale-95 border ${
-                  copiedLink
-                    ? 'bg-emerald-600 text-white border-emerald-500'
-                    : 'bg-yellow-400 hover:bg-yellow-300 text-sky-950 border-yellow-500'
-                }`}
-                title={copiedLink ? 'Tautan Berhasil Disalin!' : 'Salin Tautan Artikel'}
-                aria-label="Salin Tautan"
-              >
-                {copiedLink ? <Check className="w-3.5 h-3.5 text-white" /> : <Copy className="w-3.5 h-3.5 text-sky-950" />}
-                <span className="hidden lg:inline">{copiedLink ? 'Tersalin' : 'Salin'}</span>
-                {copiedLink && (
-                  <span className="absolute -top-7 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded bg-sky-950 text-yellow-300 text-[10px] font-black whitespace-nowrap shadow-lg border border-yellow-400/40 pointer-events-none z-30 animate-in fade-in duration-150">
-                    Tersalin!
+                  {isPlayingAudio && (
+                    <button
+                      id="stop-tts-btn"
+                      onClick={handleStopTTS}
+                      className="p-1.5 rounded-xl bg-sky-900 hover:bg-rose-900 text-rose-300 hover:text-white border border-sky-700 hover:border-rose-700 transition-colors cursor-pointer"
+                      title="Hentikan Suara (Stop)"
+                      aria-label="Hentikan Suara"
+                    >
+                      <VolumeX className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Quick Social Media Sharing Buttons (Tablet & Desktop: WA, Twitter/X, Facebook, Copy) */}
+                <div className="hidden lg:flex items-center gap-1.5 border-l border-sky-800 pl-2">
+                  <a
+                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`${getArticleShareText()}\n\n${getArticleShareUrl()}`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all shadow-2xs cursor-pointer hover:scale-105 active:scale-95"
+                    title="Bagikan artikel ini ke WhatsApp"
+                    aria-label="Bagikan ke WhatsApp"
+                  >
+                    <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/>
+                    </svg>
+                    <span>WA</span>
+                  </a>
+
+                  <a
+                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(getArticleShareText())}&url=${encodeURIComponent(getArticleShareUrl())}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-all shadow-2xs cursor-pointer hover:scale-105 active:scale-95 border border-slate-700"
+                    title="Bagikan artikel ini ke Twitter / X"
+                    aria-label="Bagikan ke Twitter / X"
+                  >
+                    <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                    <span>X</span>
+                  </a>
+
+                  <a
+                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(getArticleShareUrl())}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all shadow-2xs cursor-pointer hover:scale-105 active:scale-95"
+                    title="Bagikan artikel ini ke Facebook"
+                    aria-label="Bagikan ke Facebook"
+                  >
+                    <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                    <span>FB</span>
+                  </a>
+
+                  {/* Salin Link Button in Header */}
+                  <button
+                    type="button"
+                    onClick={handleCopyLink}
+                    className={`relative flex items-center gap-1 px-2.5 py-1 rounded-xl font-bold text-xs transition-all shadow-2xs cursor-pointer hover:scale-105 active:scale-95 border ${
+                      copiedLink
+                        ? 'bg-emerald-600 text-white border-emerald-500'
+                        : 'bg-yellow-400 hover:bg-yellow-300 text-sky-950 border-yellow-500'
+                    }`}
+                    title={copiedLink ? 'Tautan Berhasil Disalin!' : 'Salin Tautan Artikel'}
+                    aria-label="Salin Tautan"
+                  >
+                    {copiedLink ? <Check className="w-3.5 h-3.5 text-white" /> : <Copy className="w-3.5 h-3.5 text-sky-950" />}
+                    <span className="hidden xl:inline">{copiedLink ? 'Tersalin' : 'Salin'}</span>
+                    {copiedLink && (
+                      <span className="absolute -top-7 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded bg-sky-950 text-yellow-300 text-[10px] font-black whitespace-nowrap shadow-lg border border-yellow-400/40 pointer-events-none z-30 animate-in fade-in duration-150">
+                        Tersalin!
+                      </span>
+                    )}
+                  </button>
+                </div>
+
+                {/* Native / Mobile-friendly Share Button */}
+                <button
+                  id="share-article-header-btn"
+                  onClick={handleNativeShare}
+                  className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-1 rounded-xl text-xs font-bold transition-all border bg-sky-900 text-white border-sky-700 hover:bg-sky-800 hover:border-yellow-400/50 cursor-pointer shadow-2xs"
+                  title="Bagikan Berita ini ke media sosial atau salin tautan"
+                  aria-label="Bagikan Berita"
+                >
+                  <Share2 className="w-3.5 h-3.5 text-yellow-400" />
+                  <span className="hidden sm:inline">Bagikan</span>
+                </button>
+
+                {/* Bookmark / Simpan Button */}
+                <button
+                  id="article-modal-save-btn"
+                  type="button"
+                  onClick={(e) => onToggleSave(article, e)}
+                  className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-1 rounded-xl text-xs font-bold transition-all border shadow-xs cursor-pointer active:scale-95 flex-shrink-0 ${
+                    isSaved
+                      ? 'bg-yellow-400 text-sky-950 border-yellow-500 font-black shadow-yellow-500/20'
+                      : 'bg-sky-900 text-white border-sky-700 hover:bg-sky-800'
+                  }`}
+                  title={isSaved ? 'Hapus warta dari daftar simpanan' : 'Simpan warta untuk dibaca nanti'}
+                  aria-label={isSaved ? 'Warta Tersimpan' : 'Simpan Warta'}
+                >
+                  {isSaved ? (
+                    <BookmarkCheck className="w-3.5 h-3.5 text-sky-950 flex-shrink-0" />
+                  ) : (
+                    <Bookmark className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0" />
+                  )}
+                  <span className="hidden sm:inline text-[11px] sm:text-xs font-bold whitespace-nowrap">
+                    {isSaved ? 'Tersimpan' : 'Simpan'}
                   </span>
-                )}
-              </button>
+                </button>
+
+                {/* Close Button */}
+                <button
+                  id="close-article-modal-btn"
+                  onClick={handleAttemptClose}
+                  className="p-1 sm:p-1.5 rounded-xl text-sky-300 hover:text-white hover:bg-sky-800 transition-colors cursor-pointer min-w-[34px] min-h-[34px] sm:min-w-[38px] sm:min-h-[38px] flex items-center justify-center"
+                  aria-label="Tutup Berita"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
-            <button
-              id="share-article-header-btn"
-              onClick={handleNativeShare}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold transition-all border bg-sky-900 text-white border-sky-700 hover:bg-sky-800 hover:border-yellow-400/50 cursor-pointer shadow-2xs"
-              title="Bagikan Berita ini ke media sosial atau salin tautan"
-              aria-label="Bagikan Berita"
-            >
-              <Share2 className="w-3.5 h-3.5 text-yellow-400" />
-              <span className="hidden md:inline">Opsi Lain</span>
-            </button>
-
-            <button
-              id="article-modal-save-btn"
-              type="button"
-              onClick={(e) => onToggleSave(article, e)}
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-1 rounded-xl text-xs font-bold transition-all border shadow-xs cursor-pointer active:scale-95 flex-shrink-0 ${
-                isSaved
-                  ? 'bg-yellow-400 text-sky-950 border-yellow-500 font-black shadow-yellow-500/20'
-                  : 'bg-sky-900 text-white border-sky-700 hover:bg-sky-800'
-              }`}
-              title={isSaved ? 'Hapus warta dari daftar simpanan' : 'Simpan warta untuk dibaca nanti'}
-              aria-label={isSaved ? 'Warta Tersimpan' : 'Simpan Warta'}
-            >
-              {isSaved ? (
-                <BookmarkCheck className="w-3.5 h-3.5 text-sky-950 flex-shrink-0" />
-              ) : (
-                <Bookmark className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0" />
-              )}
-              <span className="text-[11px] sm:text-xs font-bold whitespace-nowrap">
-                {isSaved ? 'Tersimpan' : 'Simpan'}
-              </span>
-            </button>
-
-            <button
-              id="close-article-modal-btn"
-              onClick={handleAttemptClose}
-              className="p-1.5 rounded-xl text-sky-300 hover:text-white hover:bg-sky-800 transition-colors cursor-pointer"
-              aria-label="Tutup Berita"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Clean Editorial Toolset Controls Bar */}
-        <div className={`px-4 sm:px-6 py-2.5 border-b flex flex-wrap items-center justify-between gap-3 text-xs flex-shrink-0 transition-colors ${
-          isNightMode 
-            ? 'bg-slate-900/90 text-slate-200 border-slate-800' 
-            : 'bg-sky-50 text-slate-800 border-sky-100'
-        }`}>
-          
-          {/* Left: Mobile View Switcher, Font Family, Font Size & Night Mode Toggle */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <div className={`flex sm:hidden items-center p-0.5 rounded-lg border ${
-              isNightMode ? 'bg-slate-800 border-slate-700' : 'bg-sky-200/70 border-sky-300'
+            {/* Clean Editorial Toolset Controls Bar: Touch & Scroll friendly across Mobile, Tablet, Web */}
+            <div className={`px-3 sm:px-6 py-2 border-b flex items-center justify-between gap-2.5 sm:gap-4 text-xs flex-shrink-0 transition-colors overflow-x-auto scrollbar-none flex-nowrap sm:flex-wrap ${
+              isNightMode 
+                ? 'bg-slate-900/90 text-slate-200 border-slate-800' 
+                : 'bg-sky-50 text-slate-800 border-sky-100'
             }`}>
-              <button
-                onClick={() => setViewMode('portal')}
-                className={`px-2 py-0.5 rounded text-[11px] font-bold ${
-                  viewMode === 'portal' ? 'bg-sky-950 text-yellow-300 font-black' : 'text-sky-900'
-                }`}
-              >
-                Portal
-              </button>
-              <button
-                onClick={() => setViewMode('draft')}
-                className={`px-2 py-0.5 rounded text-[11px] font-bold ${
-                  viewMode === 'draft' ? 'bg-sky-950 text-yellow-300 font-black' : 'text-sky-900'
-                }`}
-              >
-                Draft Rapi
-              </button>
-            </div>
+              
+              {/* Left: Mobile View Switcher, Reading Theme, Font Family */}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <div className={`flex sm:hidden items-center p-0.5 rounded-lg border flex-shrink-0 ${
+                  isNightMode ? 'bg-slate-800 border-slate-700' : 'bg-sky-200/70 border-sky-300'
+                }`}>
+                  <button
+                    onClick={() => setViewMode('portal')}
+                    className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                      viewMode === 'portal' ? 'bg-sky-950 text-yellow-300 font-black' : 'text-sky-900'
+                    }`}
+                  >
+                    Portal
+                  </button>
+                  <button
+                    onClick={() => setViewMode('draft')}
+                    className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                      viewMode === 'draft' ? 'bg-sky-950 text-yellow-300 font-black' : 'text-sky-900'
+                    }`}
+                  >
+                    Draft Rapi
+                  </button>
+                </div>
 
             {/* Reading Theme Selector: Terang, Mode Nyaman (Sepia/Warm), and Malam */}
             <div className={`flex items-center gap-1 p-1 rounded-xl border transition-colors ${
@@ -1971,18 +1877,6 @@ ${article.tags.map(t => `#${t}`).join(', ')}
                 <Coffee className="w-3 h-3 text-amber-700" />
                 <span>☕ Nyaman (Warm)</span>
               </button>
-              <button
-                type="button"
-                onClick={() => setSpecificTheme('dark')}
-                className={`px-2 py-0.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  readingTheme === 'dark'
-                    ? 'bg-yellow-400 text-slate-950 font-black shadow-xs'
-                    : isNightMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800'
-                }`}
-                title="Mode Malam (Gelap)"
-              >
-                🌙 Malam
-              </button>
             </div>
 
             <div className={`flex items-center gap-1 p-1 rounded-xl border transition-colors ${
@@ -2006,40 +1900,10 @@ ${article.tags.map(t => `#${t}`).join(', ')}
                 Editorial Serif
               </button>
             </div>
-
-            <div className={`flex items-center gap-1 p-1 rounded-xl border transition-colors ${
-              isNightMode ? 'bg-slate-800 border-slate-700 text-slate-200' : 'bg-white border-sky-200 text-sky-900'
-            }`}>
-              <span className="text-[11px] font-bold px-1 font-mono">Ukuran:</span>
-              <button
-                onClick={() => setLocalFontSize('normal')}
-                className={`px-2 py-0.5 rounded-lg text-xs font-bold ${
-                  localFontSize === 'normal' ? 'bg-yellow-400 text-sky-950' : isNightMode ? 'text-slate-400' : 'text-slate-600'
-                }`}
-              >
-                A
-              </button>
-              <button
-                onClick={() => setLocalFontSize('large')}
-                className={`px-2 py-0.5 rounded-lg text-sm font-bold ${
-                  localFontSize === 'large' ? 'bg-yellow-400 text-sky-950' : isNightMode ? 'text-slate-400' : 'text-slate-600'
-                }`}
-              >
-                A+
-              </button>
-              <button
-                onClick={() => setLocalFontSize('xlarge')}
-                className={`px-2 py-0.5 rounded-lg text-base font-extrabold ${
-                  localFontSize === 'xlarge' ? 'bg-yellow-400 text-sky-950' : isNightMode ? 'text-slate-400' : 'text-slate-600'
-                }`}
-              >
-                A++
-              </button>
-            </div>
           </div>
 
           {/* Right: Auto-Scroll, Glossary, Download PDF, Copy Draft & Print Button */}
-          <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-shrink-0">
             {/* Auto-Scroll Control */}
             <div className={`flex items-center p-1 rounded-xl border shadow-2xs transition-colors ${
               isNightMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-sky-200'
@@ -2185,20 +2049,6 @@ ${article.tags.map(t => `#${t}`).join(', ')}
                 <Coffee className="w-3 h-3 text-amber-800" /> Mode Nyaman (Sepia)
               </span>
             )}
-            {isNightMode && (
-              <span className="flex items-center gap-1 text-[10px] font-mono font-black text-yellow-300 bg-yellow-400/20 px-2 py-0.5 rounded-lg border border-yellow-400/40">
-                <Moon className="w-3 h-3 fill-yellow-300 text-yellow-300" /> Mode Malam
-              </span>
-            )}
-            <div className={`flex items-center gap-1.5 text-[10px] font-black uppercase px-2 py-0.5 rounded-lg border ${
-              isNightMode 
-                ? 'text-yellow-300 bg-slate-800 border-slate-700' 
-                : isWarmMode
-                ? 'text-amber-950 bg-amber-200/70 border-amber-300'
-                : 'text-yellow-800 bg-yellow-400/20 border-yellow-400/40'
-            }`}>
-              <span>Skala: {localFontSize === 'normal' ? '100% (Normal)' : localFontSize === 'large' ? '125% (Besar)' : '150% (Ekstra Besar)'}</span>
-            </div>
           </div>
         </div>
       </>
@@ -2338,7 +2188,7 @@ ${article.tags.map(t => `#${t}`).join(', ')}
             </div>
           ) : (
             /* PORTAL VIEW MODE: Refined High-End Typography Layout */
-            <article className={`max-w-2xl sm:max-w-3xl mx-auto ${fontFamily === 'serif' ? 'font-editorial font-serif' : 'font-sans'} ${isFocusMode ? 'py-2 sm:py-4' : ''}`}>
+            <article className={`max-w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto ${fontFamily === 'serif' ? 'font-editorial font-serif' : 'font-sans'} ${isFocusMode ? 'py-2 sm:py-4 md:py-6' : ''}`}>
               
               {/* Article Title */}
               <h1 className={`${

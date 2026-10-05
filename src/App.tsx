@@ -1083,8 +1083,6 @@ export default function App() {
         savedCount={savedArticleIds.length}
         onOpenSavedDrawer={() => setIsSavedDrawerOpen(true)}
         onOpenCitizenModal={() => setIsCitizenModalOpen(true)}
-        fontSize={fontSize}
-        onChangeFontSize={setFontSize}
         siteSettings={siteSettings}
         isCompactMode={isCompactMode}
         onToggleCompactMode={() => handleToggleCompactMode()}
@@ -1362,7 +1360,7 @@ export default function App() {
                   </button>
                 </div>
               ) : viewMode === 'grid' ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
                   {filteredArticles.map((article) => (
                     <ArticleCard
                       key={article.id}

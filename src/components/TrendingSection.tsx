@@ -36,8 +36,8 @@ export const TrendingSection: React.FC<TrendingSectionProps> = ({
           </div>
         </div>
 
-        {/* 5 Ranked Bento Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3.5">
+        {/* 5 Ranked Bento Cards Grid (Responsive across mobile, tablet, and web) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
           {trendingArticles.slice(0, 5).map((article, idx) => (
             <div
               key={article.id}

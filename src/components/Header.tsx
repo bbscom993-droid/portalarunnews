@@ -260,7 +260,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center">
               {/* Category list items */}
-              <div className="flex items-center gap-2 overflow-x-auto py-2.5 no-scrollbar scroll-smooth w-full">
+              <div className="flex items-center gap-2 sm:gap-2.5 overflow-x-auto py-2.5 sm:py-3 no-scrollbar scroll-smooth w-full">
                 {categories.filter((cat) => cat.id !== 'akpersi' && cat.id !== 'box redaksi' && cat.id !== 'transportasi').map((cat) => {
                   const isActive = selectedCategory === cat.id;
                   return (
@@ -271,10 +271,10 @@ export const Header: React.FC<HeaderProps> = ({
                         onSelectCategory(cat.id);
                         if (searchQuery) onSearchChange('');
                       }}
-                      className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all whitespace-nowrap flex items-center gap-2 border shrink-0 ${
+                      className={`px-4 sm:px-4.5 py-2 sm:py-2.5 min-h-[38px] sm:min-h-[42px] rounded-xl text-[13px] sm:text-sm font-bold transition-all whitespace-nowrap flex items-center gap-2 border shrink-0 select-none cursor-pointer ${
                         isActive
-                          ? 'portal-theme-active-category shadow-md scale-[1.02]'
-                          : 'portal-theme-inactive-category shadow-2xs hover:scale-[1.01]'
+                          ? 'portal-theme-active-category shadow-md scale-[1.02] border-yellow-400 font-extrabold'
+                          : 'portal-theme-inactive-category shadow-2xs hover:scale-[1.01] hover:border-yellow-400/40'
                       }`}
                       style={isActive ? {
                         backgroundColor: accentColor,
@@ -282,16 +282,16 @@ export const Header: React.FC<HeaderProps> = ({
                         color: '#082f49'
                       } : {
                         backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                        borderColor: 'rgba(255, 255, 255, 0.15)',
+                        borderColor: 'rgba(255, 255, 255, 0.18)',
                         color: '#e0f2fe'
                       }}
                     >
                       {cat.id === 'all' ? (
-                        <Flame className="w-4 h-4" style={{ color: isActive ? '#082f49' : accentColor }} />
+                        <Flame className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0" style={{ color: isActive ? '#082f49' : accentColor }} />
                       ) : (
-                        getCategoryIcon(cat.iconName, `w-4 h-4`)
+                        getCategoryIcon(cat.iconName, `w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0`)
                       )}
-                      <span>{cat.name}</span>
+                      <span className="tracking-tight">{cat.name}</span>
                     </button>
                   );
                 })}
@@ -303,10 +303,10 @@ export const Header: React.FC<HeaderProps> = ({
                     onSelectCategory('transportasi');
                     if (searchQuery) onSearchChange('');
                   }}
-                  className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all whitespace-nowrap flex items-center gap-1.5 border shrink-0 ${
+                  className={`px-4 sm:px-4.5 py-2 sm:py-2.5 min-h-[38px] sm:min-h-[42px] rounded-xl text-[13px] sm:text-sm font-bold transition-all whitespace-nowrap flex items-center gap-2 border shrink-0 select-none cursor-pointer ${
                     selectedCategory === 'transportasi' || selectedCategory === 'box redaksi' || selectedCategory === 'akpersi'
-                      ? 'portal-theme-active-category shadow-md scale-[1.02]'
-                      : 'portal-theme-inactive-category shadow-2xs hover:scale-[1.01]'
+                      ? 'portal-theme-active-category shadow-md scale-[1.02] border-yellow-400 font-extrabold'
+                      : 'portal-theme-inactive-category shadow-2xs hover:scale-[1.01] hover:border-yellow-400/40'
                   }`}
                   style={selectedCategory === 'transportasi' || selectedCategory === 'box redaksi' || selectedCategory === 'akpersi' ? {
                     backgroundColor: accentColor,
@@ -314,12 +314,12 @@ export const Header: React.FC<HeaderProps> = ({
                     color: '#082f49'
                   } : {
                     backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                    borderColor: 'rgba(255, 255, 255, 0.15)',
+                    borderColor: 'rgba(255, 255, 255, 0.18)',
                     color: '#e0f2fe'
                   }}
                 >
-                  <Train className="w-4 h-4 text-amber-400" />
-                  <span>Kanal Khusus</span>
+                  <Train className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-amber-400 shrink-0" />
+                  <span className="tracking-tight">Kanal Khusus</span>
                   <span className="text-[10px] px-1.5 py-0.5 rounded bg-yellow-400/20 text-yellow-300 border border-yellow-400/40 uppercase font-mono font-bold">
                     Khusus
                   </span>
@@ -331,11 +331,11 @@ export const Header: React.FC<HeaderProps> = ({
                     id="nav-sawer-kopi-btn"
                     type="button"
                     onClick={onOpenSawerKopi}
-                    className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-black transition-all whitespace-nowrap flex items-center gap-2 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-300 hover:from-amber-300 hover:to-yellow-200 text-sky-950 shadow-md hover:scale-[1.03] active:scale-95 cursor-pointer border border-yellow-300 shrink-0"
+                    className="px-4 sm:px-4.5 py-2 sm:py-2.5 min-h-[38px] sm:min-h-[42px] rounded-xl text-[13px] sm:text-sm font-extrabold transition-all whitespace-nowrap flex items-center gap-2 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-300 hover:from-amber-300 hover:to-yellow-200 text-sky-950 shadow-md hover:scale-[1.03] active:scale-95 cursor-pointer border border-yellow-300 shrink-0"
                     title="Sawer Kopi Redaksi: Dukung Warta Independen"
                   >
-                    <Coffee className="w-4 h-4 text-sky-950 animate-bounce" />
-                    <span>Sawer Kopi</span>
+                    <Coffee className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-sky-950 animate-bounce shrink-0" />
+                    <span className="tracking-tight">Sawer Kopi</span>
                     <span className="text-[10px] bg-sky-950 text-yellow-300 px-1.5 py-0.5 rounded-full font-mono font-black">☕ Tip</span>
                   </button>
                 )}
@@ -472,16 +472,16 @@ export const Header: React.FC<HeaderProps> = ({
                       onSelectCategory(cat.id);
                       setIsMobileMenuOpen(false);
                     }}
-                    className={`text-left px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all min-h-[42px] ${
+                    className={`text-left px-3.5 py-2.5 sm:py-3 rounded-xl text-xs sm:text-[13px] font-bold flex items-center gap-2.5 transition-all min-h-[44px] ${
                       isActive
                         ? 'bg-yellow-400 text-sky-950 font-black shadow-xs border border-yellow-500'
                         : 'bg-sky-900/90 text-sky-200 hover:text-white hover:bg-sky-800 border border-sky-800'
                     }`}
                   >
                     {cat.id === 'all' ? (
-                      <Flame className={`w-3.5 h-3.5 flex-shrink-0 ${iconColorClass}`} />
+                      <Flame className={`w-4 h-4 flex-shrink-0 ${iconColorClass}`} />
                     ) : (
-                      getCategoryIcon(cat.iconName, `w-3.5 h-3.5 flex-shrink-0 ${iconColorClass}`)
+                      getCategoryIcon(cat.iconName, `w-4 h-4 flex-shrink-0 ${iconColorClass}`)
                     )}
                     <span className="truncate">{cat.name}</span>
                   </button>

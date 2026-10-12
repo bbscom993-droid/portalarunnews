@@ -238,8 +238,8 @@ export const Footer: React.FC<FooterProps> = ({
                 </button>
               )}
             </div>
-            <ul className="space-y-2 text-sky-300 text-xs font-medium">
-              {publicCategories.slice(1, 6).map((cat) => (
+            <ul className="space-y-1.5 text-sky-300 text-xs font-medium">
+              {publicCategories.filter((cat) => cat.id !== 'all' && cat.id !== 'legalitas').map((cat) => (
                 <li key={cat.id}>
                   <button
                     onClick={() => {

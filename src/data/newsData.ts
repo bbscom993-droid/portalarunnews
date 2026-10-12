@@ -11,7 +11,7 @@ export const CATEGORIES: Category[] = [
   { id: 'daerah', name: 'Daerah', slug: 'daerah', iconName: 'MapPin', description: 'Warta berita daerah dan info nusantara' },
   { id: 'lain-lain', name: 'Lain-lain', slug: 'lain-lain', iconName: 'Sparkles', description: 'Aneka ragam kabar menarik lainnya' },
   { id: 'akpersi', name: 'Akpersi', slug: 'akpersi', iconName: 'GraduationCap', description: 'Informasi dan warta seputar Asosiasi Akademisi & Praktisi Pers Indonesia' },
-  { id: 'laporan warga', name: 'Laporan Warga', slug: 'laporan-warga', iconName: 'MessageSquare', description: 'Aduan dan laporan langsung dari masyarakat' },
+  { id: 'laporan warga', name: 'Lapor Warga', slug: 'laporan-warga', iconName: 'MessageSquare', description: 'Aduan dan laporan langsung dari masyarakat' },
   { id: 'box redaksi', name: 'Box Redaksi', slug: 'box-redaksi', iconName: 'Mail', description: 'Informasi resmi dari dewan redaksi, tim jurnalis, dan kebijakan media' },
   { id: 'legalitas', name: 'Legalitas', slug: 'legalitas', iconName: 'FileCheck', description: 'Dokumen hukum dan pedoman penyelenggaraan ARUN NEWS.' },
   { id: 'transportasi', name: 'Transportasi', slug: 'transportasi', iconName: 'Train', description: 'Perkembangan rute, tol, dan angkutan publik' },

@@ -1084,6 +1084,7 @@ export default function App() {
         slot={topBillboardSlot}
         siteSettings={siteSettings}
         onOpenAdvertisingModal={() => setIsAdvertisingModalOpen(true)}
+        onNavigateToEditorial={navigateToEditorial}
         onTrackClick={handleTrackAdClick}
       />
 
@@ -1108,6 +1109,7 @@ export default function App() {
           allowPublicRentButton={allowPublicRentButton}
           onTrackClick={handleTrackAdClick}
           onOpenAdvertisingModal={() => setIsAdvertisingModalOpen(true)}
+          onNavigateToEditorial={navigateToEditorial}
           dimensions="1200 x 200 px"
           price="Rp 2.500.000 / bln"
         />

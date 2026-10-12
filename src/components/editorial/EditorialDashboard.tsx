@@ -141,6 +141,7 @@ interface EditorialDashboardProps {
 
   onResetAllData: () => void;
   showToast: (msg: string) => void;
+  initialTab?: TabType;
 }
 
 type TabType = 
@@ -195,9 +196,16 @@ export const EditorialDashboard: React.FC<EditorialDashboardProps> = ({
   setTransportSchedules,
   onResetAllData,
   showToast,
+  initialTab,
 }) => {
-  const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab || 'overview');
   const [copiedLink, setCopiedLink] = useState(false);
+
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
 
   // Transport Schedule CMS state
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);

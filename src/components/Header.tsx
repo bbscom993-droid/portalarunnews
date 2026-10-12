@@ -205,27 +205,6 @@ export const Header: React.FC<HeaderProps> = ({
               <Search className="w-5 h-5" />
             </button>
 
-
-
-            {/* Bookmarks Counter Button - Responsive on Mobile */}
-            <button
-              id="header-saved-btn"
-              type="button"
-              onClick={onOpenSavedDrawer}
-              className="relative flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold text-sky-950 bg-white hover:bg-yellow-50 border border-yellow-400/80 hover:border-yellow-400 transition-all shadow-xs cursor-pointer active:scale-95 flex-shrink-0 min-h-[36px] sm:min-h-0"
-              title={`Berita Disimpan (${savedCount} warta)`}
-              aria-label={`Berita Disimpan (${savedCount})`}
-            >
-              <Bookmark className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-amber-600 fill-amber-400/30" />
-              <span className="hidden sm:inline font-bold">Disimpan</span>
-              {savedCount > 0 ? (
-                <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-black bg-yellow-400 text-sky-950 rounded-full font-mono shadow-xs border border-yellow-500">
-                  {savedCount}
-                </span>
-              ) : (
-                <span className="hidden sm:inline text-[10px] text-slate-400 font-mono">0</span>
-              )}
-            </button>
           </div>
         </div>
 

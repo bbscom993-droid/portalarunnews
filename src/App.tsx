@@ -1427,6 +1427,8 @@ export default function App() {
         onOpenCyberMediaGuidelinesModal={handleOpenCyberMediaGuidelines}
         onOpenAdvertisingModal={() => setIsAdvertisingModalOpen(true)}
         onOpenSawerKopi={() => setIsSawerKopiOpen(true)}
+        savedCount={savedArticleIds.length}
+        onOpenSavedDrawer={() => setIsSavedDrawerOpen(true)}
       />
 
       {/* Advertising & Partnership Modal */}

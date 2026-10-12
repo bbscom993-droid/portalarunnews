@@ -20,7 +20,8 @@ import {
   FileCheck,
   Train,
   AlertTriangle,
-  Coffee
+  Coffee,
+  Bookmark
 } from 'lucide-react';
 import { Category, SiteSettings } from '../types';
 import { ModernGraffitiLogo } from './ModernGraffitiLogo';
@@ -35,6 +36,8 @@ interface FooterProps {
   onOpenCyberMediaGuidelinesModal?: (tab?: 'pedoman' | 'kode_etik' | 'privasi' | 'panduan_warga' | 'syarat_ketentuan' | 'disclaimer' | 'hak_cipta') => void;
   onOpenAdvertisingModal?: () => void;
   onOpenSawerKopi?: () => void;
+  savedCount?: number;
+  onOpenSavedDrawer?: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({ 
@@ -46,7 +49,9 @@ export const Footer: React.FC<FooterProps> = ({
   onOpenBoxRedaksiModal,
   onOpenCyberMediaGuidelinesModal,
   onOpenAdvertisingModal,
-  onOpenSawerKopi
+  onOpenSawerKopi,
+  savedCount = 0,
+  onOpenSavedDrawer
 }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -216,9 +221,23 @@ export const Footer: React.FC<FooterProps> = ({
 
           {/* Kanal Berita */}
           <div>
-            <h3 className="text-white font-black text-xs uppercase tracking-wider mb-3 pb-1 border-b-2 border-yellow-400 inline-block font-mono">
-              Kanal Berita
-            </h3>
+            <div className="flex items-center justify-between gap-2 mb-3 pb-1 border-b-2 border-yellow-400">
+              <h3 className="text-white font-black text-xs uppercase tracking-wider font-mono">
+                Kanal Berita
+              </h3>
+              {onOpenSavedDrawer && (
+                <button
+                  type="button"
+                  id="footer-saved-badge-btn"
+                  onClick={onOpenSavedDrawer}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-yellow-400/20 hover:bg-yellow-400 text-yellow-300 hover:text-sky-950 border border-yellow-400/40 text-[10px] font-black font-mono shadow-xs cursor-pointer active:scale-95 transition-all"
+                  title={`Buka Berita Disimpan (${savedCount})`}
+                >
+                  <Bookmark className="w-3 h-3 fill-current" />
+                  <span>Disimpan ({savedCount})</span>
+                </button>
+              )}
+            </div>
             <ul className="space-y-2 text-sky-300 text-xs font-medium">
               {publicCategories.slice(1, 6).map((cat) => (
                 <li key={cat.id}>
@@ -233,6 +252,26 @@ export const Footer: React.FC<FooterProps> = ({
                   </button>
                 </li>
               ))}
+
+              {/* Item Berita Disimpan di dalam list Kanal Berita */}
+              {onOpenSavedDrawer && (
+                <li className="pt-2 mt-1 border-t border-sky-800/60">
+                  <button
+                    id="footer-saved-articles-btn"
+                    onClick={onOpenSavedDrawer}
+                    className="w-full flex items-center justify-between p-2 rounded-xl bg-gradient-to-r from-sky-900/90 to-sky-950 hover:from-sky-800 hover:to-sky-900 border border-yellow-400/50 hover:border-yellow-400 text-yellow-300 hover:text-white transition-all shadow-xs cursor-pointer group active:scale-95 text-left"
+                    title={`Buka Berita Disimpan (${savedCount} warta)`}
+                  >
+                    <span className="flex items-center gap-1.5 text-xs font-bold">
+                      <Bookmark className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400/30 group-hover:scale-110 transition-transform" />
+                      <span>Berita Disimpan</span>
+                    </span>
+                    <span className="text-[10px] font-mono font-black px-1.5 py-0.5 rounded-full bg-yellow-400 text-sky-950 shadow-xs border border-yellow-500">
+                      {savedCount}
+                    </span>
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
 

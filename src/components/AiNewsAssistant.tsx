@@ -281,13 +281,13 @@ export const AiNewsAssistant: React.FC<AiNewsAssistantProps> = ({
 
   return (
     <>
-      {/* Floating Launcher Button (Bottom-Right) */}
+      {/* Floating Launcher Button (Bottom-Right, adapted for mobile navigation) */}
       {!isOpen && (
-        <div className="fixed bottom-5 right-5 z-40 flex items-center gap-2">
+        <div className="fixed bottom-18 lg:bottom-5 right-3 sm:right-5 z-40 flex items-center gap-2">
           <button
             id="ai-assistant-floating-btn"
             onClick={handleToggleOpen}
-            className="group flex items-center gap-2 px-4 py-3 rounded-full bg-gradient-to-r from-sky-950 via-sky-900 to-indigo-950 text-yellow-300 font-black text-xs shadow-2xl border-2 border-yellow-400 hover:scale-105 active:scale-95 transition-all cursor-pointer ring-4 ring-yellow-400/20"
+            className="group flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 rounded-full bg-gradient-to-r from-sky-950 via-sky-900 to-indigo-950 text-yellow-300 font-black text-xs shadow-2xl border-2 border-yellow-400 hover:scale-105 active:scale-95 transition-all cursor-pointer ring-4 ring-yellow-400/20"
             title="Tanya AI News Assistant"
             aria-label="Buka AI News Assistant"
           >
@@ -296,8 +296,9 @@ export const AiNewsAssistant: React.FC<AiNewsAssistantProps> = ({
               <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
               <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400" />
             </div>
-            <span className="tracking-wide uppercase font-mono">Tanya Asisten AI</span>
-            <span className="px-1.5 py-0.5 rounded-full bg-yellow-400 text-sky-950 text-[10px] font-black font-mono">
+            <span className="tracking-wide uppercase font-mono hidden sm:inline">Tanya Asisten AI</span>
+            <span className="tracking-wide uppercase font-mono sm:hidden text-[11px]">Tanya AI</span>
+            <span className="hidden sm:inline px-1.5 py-0.5 rounded-full bg-yellow-400 text-sky-950 text-[10px] font-black font-mono">
               3.8 Flash
             </span>
           </button>
@@ -308,10 +309,10 @@ export const AiNewsAssistant: React.FC<AiNewsAssistantProps> = ({
       {isOpen && (
         <div 
           id="ai-assistant-floating-panel"
-          className={`fixed right-3 sm:right-5 z-40 transition-all duration-300 flex flex-col shadow-2xl rounded-2xl border-2 border-yellow-400 bg-white overflow-hidden ${
+          className={`fixed right-2 sm:right-5 z-40 transition-all duration-300 flex flex-col shadow-2xl rounded-2xl border-2 border-yellow-400 bg-white overflow-hidden ${
             isMinimized 
-              ? 'bottom-5 w-72 sm:w-80 h-14' 
-              : 'bottom-5 w-[94vw] sm:w-[420px] h-[550px] max-h-[85vh]'
+              ? 'bottom-18 lg:bottom-5 w-72 sm:w-80 h-14' 
+              : 'bottom-16 sm:bottom-5 w-[96vw] sm:w-[420px] h-[550px] max-h-[82vh]'
           }`}
         >
           {/* Header Bar */}

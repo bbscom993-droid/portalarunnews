@@ -300,6 +300,26 @@ export interface LoginThemeSettings {
   requireEditorialAuthCheck?: boolean;
 }
 
+export type PortalColorThemeId = 
+  | 'sky_gold' 
+  | 'crimson_gold' 
+  | 'emerald_amber' 
+  | 'midnight_cyan' 
+  | 'royal_purple' 
+  | 'executive_slate' 
+  | 'custom';
+
+export interface PortalThemeSettings {
+  colorTheme: PortalColorThemeId;
+  primaryColor: string;
+  primaryDarkColor: string;
+  accentColor: string;
+  accentHoverColor?: string;
+  headerStyle?: 'gradient_elegance' | 'solid_modern' | 'minimal_border';
+  navbarStyle?: 'classic_bar' | 'floating_capsule';
+  fontFamily?: 'plus_jakarta' | 'playfair_serif' | 'cinzel_editorial' | 'syne_display';
+}
+
 export interface SiteSettings {
   portalName: string;
   portalTagline: string;
@@ -323,6 +343,7 @@ export interface SiteSettings {
   seoSettings?: SEOSettings;
   semSettings?: SEMSettings;
   loginThemeSettings?: LoginThemeSettings;
+  portalThemeSettings?: PortalThemeSettings;
   antiSpamSettings?: AntiSpamSettings;
   pushSettings?: PushNotificationSettings;
   moduleToggles: {

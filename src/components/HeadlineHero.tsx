@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { NewsArticle } from '../types';
 import { getArticleReadingTime } from '../utils/readingTime';
+import { ArticleShareButton } from './ArticleCard';
 
 interface HeadlineHeroProps {
   mainArticle: NewsArticle;
@@ -67,19 +68,24 @@ export const HeadlineHero: React.FC<HeadlineHeroProps> = ({
                 </span>
               </div>
 
-              {/* Bookmark Button */}
-              <button
-                id={`save-btn-${mainArticle.id}`}
-                onClick={(e) => onToggleSave(mainArticle, e)}
-                className={`absolute top-4 right-4 p-2.5 rounded-xl backdrop-blur-md transition-all z-10 ${
-                  isMainSaved 
-                    ? 'bg-yellow-400 text-sky-950 shadow-md border border-yellow-500' 
-                    : 'bg-sky-950/70 text-white hover:bg-white hover:text-sky-900'
-                }`}
-                title={isMainSaved ? 'Hapus dari Simpanan' : 'Simpan Berita'}
-              >
-                {isMainSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
-              </button>
+              {/* Action Buttons Top Right: Bookmark & Share */}
+              <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
+                <div className="bg-sky-950/80 backdrop-blur-md rounded-xl p-0.5 shadow-md border border-white/10 flex items-center">
+                  <ArticleShareButton article={mainArticle} variant="badge" size="sm" placement="bottom" />
+                </div>
+                <button
+                  id={`save-btn-${mainArticle.id}`}
+                  onClick={(e) => onToggleSave(mainArticle, e)}
+                  className={`p-2.5 rounded-xl backdrop-blur-md transition-all active:scale-95 cursor-pointer ${
+                    isMainSaved 
+                      ? 'bg-yellow-400 text-sky-950 shadow-md border border-yellow-500 font-bold' 
+                      : 'bg-sky-950/70 text-white hover:bg-white hover:text-sky-900'
+                  }`}
+                  title={isMainSaved ? 'Hapus dari Simpanan' : 'Simpan Berita'}
+                >
+                  {isMainSaved ? <BookmarkCheck className="w-4 h-4 text-sky-950" /> : <Bookmark className="w-4 h-4" />}
+                </button>
+              </div>
 
               {/* Bottom overlay text on image */}
               <div className="absolute bottom-4 left-4 right-4 text-white z-10">
@@ -147,9 +153,15 @@ export const HeadlineHero: React.FC<HeadlineHeroProps> = ({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1 text-xs font-black text-sky-900 group-hover:text-yellow-600 group-hover:translate-x-0.5 transition-all uppercase tracking-wider">
-                  <span>BACA SELENGKAPNYA</span>
-                  <ChevronRight className="w-4 h-4" />
+                <div className="flex items-center gap-2">
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <ArticleShareButton article={mainArticle} placement="top" size="sm" />
+                  </div>
+                  <div className="flex items-center gap-1 text-xs font-black text-sky-900 group-hover:text-yellow-600 group-hover:translate-x-0.5 transition-all uppercase tracking-wider">
+                    <span className="hidden sm:inline">BACA SELENGKAPNYA</span>
+                    <span className="sm:hidden">BACA</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </div>
                 </div>
               </div>
 
@@ -183,9 +195,12 @@ export const HeadlineHero: React.FC<HeadlineHeroProps> = ({
 
               <div className="flex items-center justify-between text-xs text-yellow-900 pt-2 border-t border-yellow-300/80">
                 <span className="text-[11px] font-semibold">{sideArticles[0].readTime}</span>
-                <span className="font-bold flex items-center gap-0.5 group-hover:translate-x-1 transition-transform">
-                  Baca <ArrowUpRight className="w-3.5 h-3.5" />
-                </span>
+                <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                  <ArticleShareButton article={sideArticles[0]} placement="top" size="sm" />
+                  <span className="font-bold flex items-center gap-0.5 group-hover:translate-x-1 transition-transform">
+                    Baca <ArrowUpRight className="w-3.5 h-3.5" />
+                  </span>
+                </div>
               </div>
             </div>
           )}
@@ -213,9 +228,12 @@ export const HeadlineHero: React.FC<HeadlineHeroProps> = ({
 
               <div className="flex items-center justify-between text-[11px] text-sky-300 pt-2 border-t border-sky-800">
                 <span>{sideArticles[1].publishedAt.split('•')[0]}</span>
-                <span className="text-yellow-400 font-bold flex items-center gap-0.5">
-                  Simak <ChevronRight className="w-3.5 h-3.5" />
-                </span>
+                <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                  <ArticleShareButton article={sideArticles[1]} placement="top" size="sm" variant="badge" />
+                  <span className="text-yellow-400 font-bold flex items-center gap-0.5">
+                    Simak <ChevronRight className="w-3.5 h-3.5" />
+                  </span>
+                </div>
               </div>
             </div>
           )}
@@ -242,9 +260,12 @@ export const HeadlineHero: React.FC<HeadlineHeroProps> = ({
 
               <div className="flex items-center justify-between text-[11px] text-sky-800 pt-2 border-t border-sky-300">
                 <span className="font-semibold">{sideArticles[2].author.name}</span>
-                <span className="font-bold text-sky-900 group-hover:translate-x-1 transition-transform flex items-center gap-0.5">
-                  Buka <ArrowUpRight className="w-3 h-3" />
-                </span>
+                <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                  <ArticleShareButton article={sideArticles[2]} placement="top" size="sm" />
+                  <span className="font-bold text-sky-900 group-hover:translate-x-1 transition-transform flex items-center gap-0.5">
+                    Buka <ArrowUpRight className="w-3 h-3" />
+                  </span>
+                </div>
               </div>
             </div>
           )}

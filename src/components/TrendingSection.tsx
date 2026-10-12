@@ -1,6 +1,7 @@
 import React from 'react';
 import { Flame, Eye, Clock, ArrowRight, TrendingUp } from 'lucide-react';
 import { NewsArticle } from '../types';
+import { ArticleShareButton } from './ArticleCard';
 
 interface TrendingSectionProps {
   trendingArticles: NewsArticle[];
@@ -66,9 +67,12 @@ export const TrendingSection: React.FC<TrendingSectionProps> = ({
                   <Eye className="w-3 h-3 text-yellow-400" />
                   {article.views.toLocaleString('id-ID')}
                 </span>
-                <span className="text-yellow-400 font-bold group-hover:translate-x-1 transition-transform flex items-center gap-0.5 text-xs">
-                  Baca <ArrowRight className="w-3 h-3" />
-                </span>
+                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                  <ArticleShareButton article={article} variant="badge" size="sm" placement="top" />
+                  <span className="text-yellow-400 font-bold group-hover:translate-x-1 transition-transform flex items-center gap-0.5 text-xs">
+                    Baca <ArrowRight className="w-3 h-3" />
+                  </span>
+                </div>
               </div>
             </div>
           ))}

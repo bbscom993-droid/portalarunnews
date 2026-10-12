@@ -24,7 +24,8 @@ import {
   Train,
   Tag,
   Megaphone,
-  Minimize2
+  Coffee,
+  ChevronDown
 } from 'lucide-react';
 import { Category, SiteSettings } from '../types';
 import { ModernGraffitiLogo } from './ModernGraffitiLogo';
@@ -38,6 +39,7 @@ interface HeaderProps {
   savedCount: number;
   onOpenSavedDrawer: () => void;
   onOpenCitizenModal?: () => void;
+  onOpenSawerKopi?: () => void;
   siteSettings?: SiteSettings;
   isCompactMode?: boolean;
   onToggleCompactMode?: () => void;
@@ -72,6 +74,7 @@ export const Header: React.FC<HeaderProps> = ({
   savedCount,
   onOpenSavedDrawer,
   onOpenCitizenModal,
+  onOpenSawerKopi,
   siteSettings,
   isCompactMode = false,
   onToggleCompactMode,
@@ -106,8 +109,21 @@ export const Header: React.FC<HeaderProps> = ({
 
   const quickSearchTags = ['Timnas', 'Ekonomi', 'Satelit', 'Smart Farming', 'IKN', 'Batik Paris'];
 
+  const themeSettings = siteSettings?.portalThemeSettings;
+  const primaryColor = themeSettings?.primaryColor || '#0c4a6e';
+  const primaryDarkColor = themeSettings?.primaryDarkColor || '#082f49';
+  const accentColor = themeSettings?.accentColor || '#facc15';
+  const accentHoverColor = themeSettings?.accentHoverColor || '#eab308';
+
   return (
-    <header id="main-header" className="sticky top-0 z-40 bg-gradient-to-r from-sky-950 via-slate-950 to-sky-900 border-b-2 border-yellow-400 shadow-xl transition-all">
+    <header 
+      id="main-header" 
+      className="sticky top-0 z-40 portal-theme-header shadow-xl transition-all"
+      style={{
+        background: `linear-gradient(to right, ${primaryDarkColor}, #020617 50%, ${primaryColor})`,
+        borderBottom: `2px solid ${accentColor}`
+      }}
+    >
       {/* Upper Main Brand & Action Row */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
         <div className="flex items-center justify-between gap-4">
@@ -117,7 +133,8 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               id="mobile-menu-toggle-btn"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 -ml-2 text-yellow-400 hover:text-white hover:bg-sky-900/80 rounded-xl transition-colors"
+              className="lg:hidden p-2 -ml-2 hover:text-white rounded-xl transition-colors"
+              style={{ color: accentColor }}
               aria-label="Menu Navigasi"
             >
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -137,7 +154,8 @@ export const Header: React.FC<HeaderProps> = ({
                 src={siteSettings?.customLogoUrl || siteSettings?.loginThemeSettings?.customLogoUrl || "/whats_app_image_2026_08_01_at_14_48_objq0v5gsu.58.png"} 
                 alt={`${siteSettings?.portalName || 'Arun News'} Logo`}
                 referrerPolicy="no-referrer"
-                className="w-11 h-11 sm:w-13 sm:h-13 rounded-full object-contain shadow-md border-2 border-yellow-400 bg-white group-hover:scale-105 transition-transform"
+                style={{ borderColor: accentColor }}
+                className="w-9 h-9 sm:w-12 sm:h-12 rounded-full object-contain shadow-md border-2 bg-white group-hover:scale-105 transition-transform shrink-0"
               />
 
               {/* Modern Graffiti Logo Wordmark */}
@@ -176,7 +194,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Right Action Controls */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3">
             {/* Search button for mobile */}
             <button
               id="mobile-search-btn"
@@ -187,42 +205,7 @@ export const Header: React.FC<HeaderProps> = ({
               <Search className="w-5 h-5" />
             </button>
 
-            {/* Lapor Warga Button */}
-            {onOpenCitizenModal && siteSettings?.moduleToggles?.allowCitizenJournalism !== false && (
-              <button
-                id="header-lapor-warga-btn"
-                onClick={onOpenCitizenModal}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black text-sky-950 bg-yellow-400 hover:bg-yellow-300 border border-yellow-500 transition-all shadow-2xs"
-                title="Lapor Warga (Kirim Laporan Kejadian)"
-              >
-                <Megaphone className="w-3.5 h-3.5 text-sky-950" />
-                <span>Lapor Warga</span>
-              </button>
-            )}
 
-            {/* Mode Kompak Toggle Button (Desktop Header) */}
-            {onToggleCompactMode && (
-              <button
-                id="header-compact-mode-btn"
-                type="button"
-                onClick={onToggleCompactMode}
-                className={`hidden lg:flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95 border ${
-                  isCompactMode
-                    ? 'bg-yellow-400 text-sky-950 border-yellow-500 font-black shadow-xs ring-2 ring-yellow-400/40'
-                    : 'bg-white hover:bg-yellow-50 text-sky-950 border-yellow-400/80 hover:border-yellow-400'
-                }`}
-                title={isCompactMode ? 'Mode Kompak Aktif (Klik untuk Mode Lengkap)' : 'Aktifkan Mode Kompak (Sembunyikan Kuis, Polling & Widget)'}
-                aria-pressed={isCompactMode}
-              >
-                <Minimize2 className={`w-3.5 h-3.5 ${isCompactMode ? 'text-sky-950 animate-pulse' : 'text-amber-600'}`} />
-                <span className="font-bold">Mode Kompak</span>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-black ${
-                  isCompactMode ? 'bg-sky-950 text-yellow-300' : 'bg-slate-100 text-slate-700'
-                }`}>
-                  {isCompactMode ? 'ON' : 'OFF'}
-                </span>
-              </button>
-            )}
 
             {/* Bookmarks Counter Button - Responsive on Mobile */}
             <button
@@ -287,37 +270,97 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Navigation Category Bar */}
-      <nav id="category-navigation" className="bg-gradient-to-r from-slate-950 via-sky-950 to-slate-950 border-t border-sky-800/80 backdrop-blur-xs">
+      <nav 
+        id="category-navigation" 
+        className="portal-theme-navbar backdrop-blur-xs transition-colors"
+        style={{
+          background: `linear-gradient(to right, #020617, ${primaryDarkColor}, #020617)`,
+          borderTop: '1px solid rgba(255, 255, 255, 0.12)'
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center">
-            {/* Category list items */}
-            <div className="flex items-center gap-2 overflow-x-auto py-2.5 no-scrollbar scroll-smooth w-full">
-              {categories.filter((cat) => cat.id !== 'akpersi' && cat.id !== 'box redaksi' && cat.id !== 'transportasi').map((cat) => {
-                const isActive = selectedCategory === cat.id;
-                return (
+              {/* Category list items */}
+              <div className="flex items-center gap-2 overflow-x-auto py-2.5 no-scrollbar scroll-smooth w-full">
+                {categories.filter((cat) => cat.id !== 'akpersi' && cat.id !== 'box redaksi' && cat.id !== 'transportasi').map((cat) => {
+                  const isActive = selectedCategory === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      id={`nav-cat-${cat.id}`}
+                      onClick={() => {
+                        onSelectCategory(cat.id);
+                        if (searchQuery) onSearchChange('');
+                      }}
+                      className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all whitespace-nowrap flex items-center gap-2 border shrink-0 ${
+                        isActive
+                          ? 'portal-theme-active-category shadow-md scale-[1.02]'
+                          : 'portal-theme-inactive-category shadow-2xs hover:scale-[1.01]'
+                      }`}
+                      style={isActive ? {
+                        backgroundColor: accentColor,
+                        borderColor: accentHoverColor,
+                        color: '#082f49'
+                      } : {
+                        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                        borderColor: 'rgba(255, 255, 255, 0.15)',
+                        color: '#e0f2fe'
+                      }}
+                    >
+                      {cat.id === 'all' ? (
+                        <Flame className="w-4 h-4" style={{ color: isActive ? '#082f49' : accentColor }} />
+                      ) : (
+                        getCategoryIcon(cat.iconName, `w-4 h-4`)
+                      )}
+                      <span>{cat.name}</span>
+                    </button>
+                  );
+                })}
+
+                {/* Kanal Khusus Navigation Item */}
+                <button
+                  id="nav-cat-transportasi"
+                  onClick={() => {
+                    onSelectCategory('transportasi');
+                    if (searchQuery) onSearchChange('');
+                  }}
+                  className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all whitespace-nowrap flex items-center gap-1.5 border shrink-0 ${
+                    selectedCategory === 'transportasi' || selectedCategory === 'box redaksi' || selectedCategory === 'akpersi'
+                      ? 'portal-theme-active-category shadow-md scale-[1.02]'
+                      : 'portal-theme-inactive-category shadow-2xs hover:scale-[1.01]'
+                  }`}
+                  style={selectedCategory === 'transportasi' || selectedCategory === 'box redaksi' || selectedCategory === 'akpersi' ? {
+                    backgroundColor: accentColor,
+                    borderColor: accentHoverColor,
+                    color: '#082f49'
+                  } : {
+                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                    borderColor: 'rgba(255, 255, 255, 0.15)',
+                    color: '#e0f2fe'
+                  }}
+                >
+                  <Train className="w-4 h-4 text-amber-400" />
+                  <span>Kanal Khusus</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-yellow-400/20 text-yellow-300 border border-yellow-400/40 uppercase font-mono font-bold">
+                    Khusus
+                  </span>
+                </button>
+
+                {/* Tombol Sawer Kopi Muncul di Dekat Kanal Khusus */}
+                {onOpenSawerKopi && (
                   <button
-                    key={cat.id}
-                    id={`nav-cat-${cat.id}`}
-                    onClick={() => {
-                      onSelectCategory(cat.id);
-                      if (searchQuery) onSearchChange('');
-                    }}
-                    className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all whitespace-nowrap flex items-center gap-2 border ${
-                      isActive
-                        ? 'bg-yellow-400 text-sky-950 shadow-md border-yellow-500 scale-[1.02]'
-                        : 'bg-sky-900/80 text-sky-100 hover:bg-sky-800 hover:text-yellow-300 border-sky-700/80 shadow-2xs'
-                    }`}
+                    id="nav-sawer-kopi-btn"
+                    type="button"
+                    onClick={onOpenSawerKopi}
+                    className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-black transition-all whitespace-nowrap flex items-center gap-2 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-300 hover:from-amber-300 hover:to-yellow-200 text-sky-950 shadow-md hover:scale-[1.03] active:scale-95 cursor-pointer border border-yellow-300 shrink-0"
+                    title="Sawer Kopi Redaksi: Dukung Warta Independen"
                   >
-                    {cat.id === 'all' ? (
-                      <Flame className={`w-4 h-4 ${isActive ? 'text-sky-950' : 'text-yellow-400'}`} />
-                    ) : (
-                      getCategoryIcon(cat.iconName, `w-4 h-4 ${isActive ? 'text-sky-950' : 'text-yellow-400'}`)
-                    )}
-                    <span>{cat.name}</span>
+                    <Coffee className="w-4 h-4 text-sky-950 animate-bounce" />
+                    <span>Sawer Kopi</span>
+                    <span className="text-[10px] bg-sky-950 text-yellow-300 px-1.5 py-0.5 rounded-full font-mono font-black">☕ Tip</span>
                   </button>
-                );
-              })}
-            </div>
+                )}
+              </div>
           </div>
         </div>
       </nav>
@@ -326,7 +369,11 @@ export const Header: React.FC<HeaderProps> = ({
       {isMobileMenuOpen && (
         <div 
           id="mobile-drawer-menu"
-          className="lg:hidden bg-sky-950 text-white border-b-2 border-yellow-400 shadow-2xl px-4 py-4 animate-in slide-in-from-top-2 duration-200 max-h-[82vh] overflow-y-auto no-scrollbar"
+          className="lg:hidden text-white shadow-2xl px-4 py-4 animate-in slide-in-from-top-2 duration-200 max-h-[82vh] overflow-y-auto no-scrollbar"
+          style={{
+            backgroundColor: primaryDarkColor,
+            borderBottom: `2px solid ${accentColor}`
+          }}
         >
           {/* Quick Access Badges */}
           <div className="mb-4 pb-3 border-b border-sky-800">
@@ -358,35 +405,28 @@ export const Header: React.FC<HeaderProps> = ({
                 </span>
               </button>
 
-              {/* Dedicated Mobile Menu Mode Kompak Toggle Button */}
-              {onToggleCompactMode && (
+              {/* Tombol Sawer Kopi di Mobile Drawer */}
+              {onOpenSawerKopi && (
                 <button
-                  id="mobile-menu-compact-mode-btn"
+                  id="mobile-menu-sawer-kopi-btn"
                   type="button"
                   onClick={() => {
-                    onToggleCompactMode();
+                    setIsMobileMenuOpen(false);
+                    onOpenSawerKopi();
                   }}
-                  className={`col-span-2 flex items-center justify-between p-2.5 rounded-xl border transition-all shadow-xs cursor-pointer active:scale-[0.99] ${
-                    isCompactMode
-                      ? 'bg-gradient-to-r from-yellow-500/20 via-sky-900 to-sky-950 border-yellow-400 text-yellow-300'
-                      : 'bg-sky-900 hover:bg-sky-800 border-sky-700 text-sky-100'
-                  }`}
+                  className="col-span-2 flex items-center justify-between p-2.5 rounded-xl bg-gradient-to-r from-amber-500/20 via-yellow-500/20 to-sky-900 border border-yellow-400 text-yellow-300 transition-all shadow-xs cursor-pointer active:scale-[0.99]"
                 >
                   <div className="flex items-center gap-2">
-                    <div className={`p-1.5 rounded-lg ${isCompactMode ? 'bg-yellow-400 text-sky-950' : 'bg-sky-800 text-yellow-400'} font-black shadow-xs`}>
-                      <Minimize2 className="w-4 h-4" />
+                    <div className="p-1.5 rounded-lg bg-yellow-400 text-sky-950 font-black shadow-xs">
+                      <Coffee className="w-4 h-4" />
                     </div>
                     <div className="flex flex-col text-left">
-                      <span className="font-black text-white text-xs">Mode Kompak (Fokus Warta)</span>
-                      <span className="text-[10px] text-sky-300/80 font-mono">Sembunyikan kuis, polling & widget</span>
+                      <span className="font-black text-white text-xs">Sawer Kopi Redaksi</span>
+                      <span className="text-[10px] text-yellow-300/80 font-mono">Dukung jurnalisme independen</span>
                     </div>
                   </div>
-                  <span className={`px-2.5 py-1 text-[11px] font-black rounded-full font-mono shadow-xs border ${
-                    isCompactMode
-                      ? 'bg-yellow-400 text-sky-950 border-yellow-500'
-                      : 'bg-sky-950 text-sky-300 border-sky-800'
-                  }`}>
-                    {isCompactMode ? 'AKTIF' : 'NONAKTIF'}
+                  <span className="px-2.5 py-1 text-[11px] font-black rounded-full font-mono shadow-xs bg-yellow-400 text-sky-950 border border-yellow-500">
+                    ☕ Sawer
                   </span>
                 </button>
               )}
@@ -468,6 +508,61 @@ export const Header: React.FC<HeaderProps> = ({
                   </button>
                 );
               })}
+            </div>
+          </div>
+
+          {/* Kanal Khusus & Sawer Kopi Section */}
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-[11px] font-black uppercase tracking-wider text-yellow-400 font-mono">
+                Kanal Khusus & Dukungan
+              </h4>
+              {onOpenSawerKopi && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    onOpenSawerKopi();
+                  }}
+                  className="inline-flex items-center gap-1 text-[11px] font-black text-yellow-300 hover:underline font-mono"
+                >
+                  <Coffee className="w-3 h-3" />
+                  <span>Traktir Kopi</span>
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-1.5">
+              <button
+                onClick={() => {
+                  onSelectCategory('transportasi');
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`text-left px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all min-h-[42px] border ${
+                  selectedCategory === 'transportasi'
+                    ? 'bg-yellow-400 text-sky-950 font-black border-yellow-500'
+                    : 'bg-sky-900/90 text-sky-200 hover:text-white hover:bg-sky-800 border-sky-800'
+                }`}
+              >
+                <Train className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                <span>Transportasi (Khusus)</span>
+              </button>
+              {onOpenSawerKopi && (
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    onOpenSawerKopi();
+                  }}
+                  className="text-left px-3 py-2.5 rounded-xl text-xs font-black flex items-center justify-between gap-1.5 transition-all min-h-[42px] bg-gradient-to-r from-amber-400 to-yellow-400 text-sky-950 border border-yellow-300 shadow-xs cursor-pointer active:scale-95"
+                >
+                  <div className="flex items-center gap-1.5 truncate">
+                    <Coffee className="w-3.5 h-3.5 flex-shrink-0" />
+                    <span>Sawer Kopi</span>
+                  </div>
+                  <span className="text-[9px] bg-sky-950 text-yellow-300 px-1 py-0.5 rounded font-mono font-bold">
+                    ☕
+                  </span>
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -101,6 +101,7 @@ import { PopularArticlesChart } from './PopularArticlesChart';
 import { CommentSentimentAnalytics } from './CommentSentimentAnalytics';
 import { SeoHeadlineStudio } from './SeoHeadlineStudio';
 import { AdManagementView } from './AdManagementView';
+import { PortalThemeSettingsView } from './PortalThemeSettingsView';
 import { AdClicksBarChart } from './AdClicksBarChart';
 import { 
   INITIAL_FLAGGED_BUZZER_COMMENTS, 
@@ -163,6 +164,7 @@ type TabType =
   | 'editorial_board'
   | 'transport_schedules'
   | 'advertising'
+  | 'theme'
   | 'settings';
 
 export const EditorialDashboard: React.FC<EditorialDashboardProps> = ({
@@ -1170,6 +1172,24 @@ export const EditorialDashboard: React.FC<EditorialDashboardProps> = ({
               </div>
               <span className="text-[10px] bg-yellow-100 text-sky-950 px-1.5 py-0.2 rounded font-mono font-bold">
                 {(siteSettings.semSettings?.adSlots || []).filter(s => s.isEnabled).length} Aktif
+              </span>
+            </button>
+
+            {/* Nav item: Warna & Template Portal */}
+            <button
+              onClick={() => setActiveTab('theme')}
+              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all text-left ${
+                activeTab === 'theme'
+                  ? 'bg-yellow-400 text-sky-950 shadow-2xs font-black'
+                  : 'text-slate-700 hover:bg-sky-50 hover:text-sky-950'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Palette className="w-4 h-4 text-sky-900" />
+                <span>Warna & Template Portal</span>
+              </div>
+              <span className="text-[10px] bg-sky-950 text-yellow-300 px-2 py-0.5 rounded-full font-mono font-bold">
+                {(siteSettings.portalThemeSettings?.colorTheme || 'sky_gold').toUpperCase()}
               </span>
             </button>
 
@@ -3815,6 +3835,18 @@ export const EditorialDashboard: React.FC<EditorialDashboardProps> = ({
           )}
 
           {/* ========================================================= */}
+          {/* TAB: PENGATURAN WARNA & TEMPLATE PORTAL                   */}
+          {/* ========================================================= */}
+          {activeTab === 'theme' && (
+            <PortalThemeSettingsView
+              siteSettings={siteSettings}
+              setSiteSettings={setSiteSettings}
+              showToast={showToast}
+              onBackToPublicPortal={onBackToPublicPortal}
+            />
+          )}
+
+          {/* ========================================================= */}
           {/* TAB 15: SETTINGS & MODULE TOGGLES */}
           {/* ========================================================= */}
           {activeTab === 'settings' && (
@@ -3825,8 +3857,41 @@ export const EditorialDashboard: React.FC<EditorialDashboardProps> = ({
                   Pengaturan Identitas Portal & Saklar Modul Global
                 </h2>
                 <p className="text-xs text-slate-600 font-medium">
-                  Atur nama portal, kontak redaksi, penempatan iklan komersial, darurat banner BMKG, serta hidup/matikan modul
+                  Atur nama portal, kontak redaksi, penempatan iklan komersial, skema warna template, darurat banner BMKG, serta hidup/matikan modul
                 </p>
+              </div>
+
+              {/* Panel Pengaturan Warna Template Shortcut */}
+              <div className="p-5 rounded-2xl bg-gradient-to-r from-sky-950 via-sky-900 to-sky-950 text-white border-2 border-yellow-400 shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-yellow-400 text-sky-950 flex items-center justify-center font-black shadow-md flex-shrink-0">
+                    <Palette className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-black uppercase font-mono tracking-tight text-white">
+                        Pengaturan Warna & Template Desain Portal
+                      </h3>
+                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-yellow-400 text-sky-950">
+                        {(siteSettings.portalThemeSettings?.colorTheme || 'sky_gold').toUpperCase()}
+                      </span>
+                    </div>
+                    <p className="text-xs text-sky-200 mt-0.5 font-medium">
+                      Pilih skema warna terpadu (Biru Samudra, Merah Putih Nasional, Zamrud Khatulistiwa, Cyber Midnight, dsb.) atau atur kode Hex kustom sendiri.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('theme')}
+                    className="w-full sm:w-auto px-4 py-2.5 bg-yellow-400 hover:bg-yellow-300 text-sky-950 text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-md flex-shrink-0 active:scale-95 cursor-pointer"
+                  >
+                    <Palette className="w-4 h-4" />
+                    <span>Ganti Warna Template</span>
+                  </button>
+                </div>
               </div>
 
               {/* Panel Pengaturan Iklan & Monetisasi Shortcut */}

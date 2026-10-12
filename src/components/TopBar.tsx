@@ -12,7 +12,7 @@ import {
   Flame,
   Radio
 } from 'lucide-react';
-import { WeatherInfo, TrendingTopic } from '../types';
+import { WeatherInfo, TrendingTopic, SiteSettings } from '../types';
 
 interface TopBarProps {
   weatherCities: WeatherInfo[];
@@ -21,6 +21,7 @@ interface TopBarProps {
   dbStatus?: 'connected' | 'connecting' | 'offline';
   dbArticlesCount?: number;
   onReconnectDB?: () => void;
+  siteSettings?: SiteSettings;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({ 
@@ -29,7 +30,8 @@ export const TopBar: React.FC<TopBarProps> = ({
   onSelectTopic,
   dbStatus = 'connected',
   dbArticlesCount,
-  onReconnectDB
+  onReconnectDB,
+  siteSettings,
 }) => {
   const [currentTime, setCurrentTime] = useState<string>('');
   const [currentDate, setCurrentDate] = useState<string>('');
@@ -73,21 +75,40 @@ export const TopBar: React.FC<TopBarProps> = ({
     }
   };
 
+  const portalTheme = siteSettings?.portalThemeSettings;
+  const primaryDarkColor = portalTheme?.primaryDarkColor || '#082f49';
+  const primaryColor = portalTheme?.primaryColor || '#0c4a6e';
+  const accentColor = portalTheme?.accentColor || '#facc15';
+
   return (
-    <div id="top-bar-container" className="bg-sky-950 text-sky-200 text-xs border-b border-sky-900">
+    <div 
+      id="top-bar-container" 
+      className="portal-theme-topbar text-sky-200 text-xs transition-colors"
+      style={{
+        backgroundColor: primaryDarkColor,
+        borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
+      }}
+    >
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4">
           
           {/* Left: Live Date, Clock, & Weather Selector */}
           <div className="flex items-center flex-wrap gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-start">
             <div className="flex items-center gap-1.5 text-sky-200 font-semibold">
-              <span className="inline-block w-2 h-2 rounded-full bg-yellow-400 animate-pulse flex-shrink-0" />
+              <span className="inline-block w-2 h-2 rounded-full animate-pulse flex-shrink-0" style={{ backgroundColor: accentColor }} />
               <span className="uppercase tracking-wider text-[10px] sm:text-[11px] font-mono whitespace-nowrap">{currentDate || 'Memuat tanggal...'}</span>
             </div>
 
-            <div className="flex items-center gap-1 text-yellow-300 bg-sky-900 px-2 sm:px-2.5 py-0.5 rounded-lg border border-yellow-400/30 shadow-2xs">
-              <Clock className="w-3 h-3 text-yellow-400 flex-shrink-0" />
-              <span className="font-mono font-bold text-[10px] sm:text-[11px]">{currentTime}</span>
+            <div 
+              className="flex items-center gap-1 px-2 sm:px-2.5 py-0.5 rounded-lg border shadow-2xs"
+              style={{
+                backgroundColor: primaryColor,
+                borderColor: 'rgba(255, 255, 255, 0.15)',
+                color: accentColor
+              }}
+            >
+              <Clock className="w-3 h-3 flex-shrink-0" style={{ color: accentColor }} />
+              <span className="font-mono font-bold text-[10px] sm:text-[11px] text-white">{currentTime}</span>
             </div>
 
             {/* Live Firestore Database Connection Badge */}

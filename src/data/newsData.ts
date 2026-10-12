@@ -728,6 +728,16 @@ export const INITIAL_SITE_SETTINGS: SiteSettings = {
     maxFailedAttemptsAllowed: 5,
     requireEditorialAuthCheck: true,
   },
+  portalThemeSettings: {
+    colorTheme: 'sky_gold',
+    primaryColor: '#0c4a6e',
+    primaryDarkColor: '#082f49',
+    accentColor: '#facc15',
+    accentHoverColor: '#eab308',
+    headerStyle: 'gradient_elegance',
+    navbarStyle: 'classic_bar',
+    fontFamily: 'plus_jakarta',
+  },
   antiSpamSettings: {
     enabled: true,
     strictness: 'maksimal',

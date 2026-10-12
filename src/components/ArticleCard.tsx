@@ -13,13 +13,217 @@ import {
   MinusCircle,
   BookOpen,
   Check,
-  Copy
+  Copy,
+  X
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { NewsArticle } from '../types';
 import { analyzeArticleSentiment } from '../utils/sentimentEngine';
 import { getArticleReadingTime } from '../utils/readingTime';
 import { ArticleMiniPodcast } from './ArticleMiniPodcast';
+
+export interface ArticleShareButtonProps {
+  article: NewsArticle;
+  placement?: 'top' | 'bottom';
+  className?: string;
+  size?: 'sm' | 'md';
+  variant?: 'button' | 'badge';
+}
+
+export const ArticleShareButton: React.FC<ArticleShareButtonProps> = ({
+  article,
+  placement = 'top',
+  className = '',
+  size = 'md',
+  variant = 'button',
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+  const shareUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/article/${article.slug || article.id}`
+    : `https://arunnews.id/article/${article.slug || article.id}`;
+  const shareText = `${article.title} - Warta Terpercaya di Arun News`;
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      });
+    }
+  };
+
+  const handleNativeShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({
+          title: article.title,
+          text: shareText,
+          url: shareUrl,
+        });
+        setIsOpen(false);
+      } catch {
+        // user cancelled share
+      }
+    }
+  };
+
+  const hasNativeShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
+
+  const btnClasses = size === 'sm'
+    ? 'px-2 py-1 text-[11px] gap-1'
+    : 'px-2.5 py-1.5 text-xs gap-1.5';
+
+  return (
+    <div 
+      className={`relative inline-block ${className}`} 
+      ref={dropdownRef}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        type="button"
+        id={`card-share-btn-${article.id}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          setIsOpen((prev) => !prev);
+        }}
+        className={`flex items-center rounded-xl font-bold transition-all active:scale-95 cursor-pointer shadow-2xs ${btnClasses} ${
+          variant === 'badge'
+            ? isOpen
+              ? 'bg-yellow-400 text-sky-950 font-black'
+              : 'text-yellow-400 hover:text-white hover:bg-sky-900/60'
+            : isOpen
+              ? 'bg-yellow-400 text-sky-950 border border-yellow-500 font-black ring-2 ring-yellow-400/50'
+              : 'bg-sky-50 hover:bg-yellow-100 text-sky-900 hover:text-sky-950 border border-sky-200 hover:border-yellow-400'
+        }`}
+        title="Bagikan Berita (Salin Tautan, WhatsApp, X)"
+        aria-label="Bagikan Berita"
+        aria-expanded={isOpen}
+      >
+        <Share2 className={`w-3.5 h-3.5 ${variant === 'badge' ? (isOpen ? 'text-sky-950' : 'text-yellow-400') : 'text-sky-700'}`} />
+        <span className="font-bold">Bagikan</span>
+      </button>
+
+      {isOpen && (
+        <div 
+          className={`absolute ${
+            placement === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'
+          } right-0 w-64 bg-white rounded-2xl shadow-2xl border border-sky-200 p-3 z-50 animate-in fade-in zoom-in-95 duration-150 text-left`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between pb-2 mb-2 border-b border-sky-100">
+            <div className="flex items-center gap-1.5 text-xs font-black text-sky-950">
+              <Share2 className="w-3.5 h-3.5 text-yellow-500" />
+              <span>Bagikan Berita</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
+              aria-label="Tutup Menu Bagikan"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <div className="space-y-1.5 text-xs">
+            {/* 1. Salin Tautan */}
+            <button
+              type="button"
+              onClick={handleCopy}
+              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all font-bold border cursor-pointer ${
+                copied
+                  ? 'bg-emerald-600 text-white border-emerald-500 shadow-xs'
+                  : 'bg-sky-50 hover:bg-yellow-200/70 text-sky-950 border-sky-200'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                {copied ? <Check className="w-4 h-4 text-white" /> : <Copy className="w-4 h-4 text-sky-700" />}
+                <span>{copied ? 'Tautan Tersalin! ✓' : 'Salin Tautan'}</span>
+              </div>
+              <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-black ${
+                copied ? 'bg-emerald-700 text-emerald-100' : 'bg-sky-200/60 text-sky-800'
+              }`}>
+                {copied ? 'OK' : 'Salin'}
+              </span>
+            </button>
+
+            {/* 2. WhatsApp */}
+            <a
+              href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`${shareText}\n\n${shareUrl}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setIsOpen(false)}
+              className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-all shadow-xs"
+              title="Bagikan ke WhatsApp"
+            >
+              <div className="flex items-center gap-2">
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/>
+                </svg>
+                <span>Kirim ke WhatsApp</span>
+              </div>
+              <span className="text-[10px] font-mono text-emerald-100 font-bold">Kirim</span>
+            </a>
+
+            {/* 3. X / Twitter */}
+            <a
+              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setIsOpen(false)}
+              className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold transition-all shadow-xs border border-slate-700"
+              title="Bagikan ke X"
+            >
+              <div className="flex items-center gap-2">
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+                <span>Bagikan ke X</span>
+              </div>
+              <span className="text-[10px] font-mono text-slate-300 font-bold">Post</span>
+            </a>
+
+            {/* 4. Native Web Share */}
+            {hasNativeShare && (
+              <button
+                type="button"
+                onClick={handleNativeShare}
+                className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold transition-all text-xs cursor-pointer border border-slate-200"
+              >
+                <div className="flex items-center gap-2">
+                  <Share2 className="w-3.5 h-3.5 text-slate-600" />
+                  <span>Aplikasi Lainnya...</span>
+                </div>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 interface SocialShareProps {
   article: NewsArticle;
@@ -78,7 +282,7 @@ export const SocialShareGroup: React.FC<SocialShareProps> = ({ article, variant 
         target="_blank"
         rel="noopener noreferrer"
         onClick={(e) => e.stopPropagation()}
-        className={`${btnBase} bg-slate-900 hover:bg-slate-800 text-white border border-slate-700`}
+        className={`${btnBase} ${variant === 'compact' ? 'hidden sm:flex' : ''} bg-slate-900 hover:bg-slate-800 text-white border border-slate-700`}
         title="Bagikan ke X"
         aria-label="Bagikan ke X"
       >
@@ -94,7 +298,7 @@ export const SocialShareGroup: React.FC<SocialShareProps> = ({ article, variant 
         target="_blank"
         rel="noopener noreferrer"
         onClick={(e) => e.stopPropagation()}
-        className={`${btnBase} bg-blue-600 hover:bg-blue-500 text-white`}
+        className={`${btnBase} ${variant === 'compact' ? 'hidden sm:flex' : ''} bg-blue-600 hover:bg-blue-500 text-white`}
         title="Bagikan ke Facebook"
         aria-label="Bagikan ke Facebook"
       >
@@ -228,7 +432,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
         </div>
         <div className="flex items-center gap-1.5 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
           <ArticleMiniPodcast article={article} variant="compact" />
-          <SocialShareGroup article={article} variant="compact" />
+          <ArticleShareButton article={article} size="sm" placement="bottom" />
         </div>
         <ArrowUpRight className="w-4 h-4 text-sky-600 group-hover:text-yellow-600 flex-shrink-0" />
 
@@ -353,8 +557,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold text-sky-800 hidden md:inline">Bagikan:</span>
-              <SocialShareGroup article={article} variant="bar" />
+              <ArticleShareButton article={article} placement="top" size="sm" />
               <button
                 onClick={(e) => onToggleSave(article, e)}
                 className={`p-2 rounded-xl transition-all active:scale-95 min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer ${
@@ -419,8 +622,8 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
 
         {/* Action Buttons Top Right: Bookmark & Share */}
         <div className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 flex items-center gap-1.5 z-10">
-          <div className="bg-sky-950/80 backdrop-blur-md rounded-xl p-1 shadow-md border border-white/10 flex items-center">
-            <SocialShareGroup article={article} variant="compact" />
+          <div className="bg-sky-950/80 backdrop-blur-md rounded-xl p-0.5 shadow-md border border-white/10 flex items-center">
+            <ArticleShareButton article={article} variant="badge" size="sm" placement="bottom" />
           </div>
           <button
             id={`card-save-btn-${article.id}`}
@@ -520,7 +723,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
           )}
         </div>
 
-        {/* Card Author, Social Share and Read Link */}
+        {/* Card Author, Bagikan Button and Read Link */}
         <div className="pt-3 border-t border-sky-100 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <img
@@ -529,13 +732,13 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
               referrerPolicy="no-referrer"
               className="w-6 h-6 rounded-full object-cover border border-sky-200 shrink-0"
             />
-            <span className="text-xs font-bold text-sky-900 truncate max-w-[90px] sm:max-w-[110px]">
+            <span className="text-xs font-bold text-sky-900 truncate max-w-[80px] sm:max-w-[110px]">
               {article.author.name}
             </span>
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
-            <SocialShareGroup article={article} variant="compact" />
+            <ArticleShareButton article={article} placement="top" size="sm" />
           </div>
 
           <span className="inline-flex items-center gap-0.5 text-xs font-black text-sky-900 group-hover:text-yellow-600 uppercase tracking-wider shrink-0">

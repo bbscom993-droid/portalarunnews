@@ -19,7 +19,8 @@ import {
   BookOpen,
   FileCheck,
   Train,
-  AlertTriangle
+  AlertTriangle,
+  Coffee
 } from 'lucide-react';
 import { Category, SiteSettings } from '../types';
 import { ModernGraffitiLogo } from './ModernGraffitiLogo';
@@ -33,6 +34,7 @@ interface FooterProps {
   onOpenBoxRedaksiModal?: () => void;
   onOpenCyberMediaGuidelinesModal?: (tab?: 'pedoman' | 'kode_etik' | 'privasi' | 'panduan_warga' | 'syarat_ketentuan' | 'disclaimer' | 'hak_cipta') => void;
   onOpenAdvertisingModal?: () => void;
+  onOpenSawerKopi?: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({ 
@@ -43,7 +45,8 @@ export const Footer: React.FC<FooterProps> = ({
   onNavigateToEditorial,
   onOpenBoxRedaksiModal,
   onOpenCyberMediaGuidelinesModal,
-  onOpenAdvertisingModal
+  onOpenAdvertisingModal,
+  onOpenSawerKopi
 }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -52,14 +55,33 @@ export const Footer: React.FC<FooterProps> = ({
   // Filter out internal/editorial categories for user-facing menus
   const publicCategories = categories.filter((cat) => cat.id !== 'akpersi' && cat.id !== 'box redaksi' && cat.id !== 'transportasi');
 
+  const portalTheme = siteSettings?.portalThemeSettings;
+  const primaryDarkColor = portalTheme?.primaryDarkColor || '#082f49';
+  const primaryColor = portalTheme?.primaryColor || '#0c4a6e';
+  const accentColor = portalTheme?.accentColor || '#facc15';
+  const accentHoverColor = portalTheme?.accentHoverColor || '#eab308';
+
   return (
-    <footer id="main-footer" className="bg-sky-950 text-sky-200 border-t border-sky-800 text-xs">
+    <footer 
+      id="main-footer" 
+      className="portal-theme-footer text-sky-200 text-xs transition-colors"
+      style={{
+        backgroundColor: primaryDarkColor,
+        borderTop: '1px solid rgba(255, 255, 255, 0.12)'
+      }}
+    >
       
       {/* Top Banner Row with Kirim Berita and Scroll to Top */}
-      <div className="bg-sky-900 border-b border-sky-800 py-3">
+      <div 
+        className="portal-theme-footer-banner border-b py-3 transition-colors"
+        style={{
+          backgroundColor: primaryColor,
+          borderColor: 'rgba(255, 255, 255, 0.1)'
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-sky-200 font-medium">
-            <Shield className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+            <Shield className="w-4 h-4 flex-shrink-0" style={{ color: accentColor }} />
             <span>Menaati <strong>Pedoman Pemberitaan Media Siber</strong> & {siteSettings?.pressCouncilCode || 'Kode Etik Jurnalistik Dewan Pers RI'}</span>
           </div>
 
@@ -68,16 +90,24 @@ export const Footer: React.FC<FooterProps> = ({
               <button
                 id="footer-send-news-btn"
                 onClick={onOpenCitizenModal}
-                className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 active:scale-95 text-sky-950 transition-all font-black uppercase tracking-wider text-xs border border-yellow-500 shadow-xs"
+                style={{
+                  backgroundColor: accentColor,
+                  borderColor: accentHoverColor,
+                  color: '#082f49'
+                }}
+                className="portal-theme-accent-btn flex items-center gap-1.5 px-4 py-1.5 rounded-xl active:scale-95 transition-all font-black uppercase tracking-wider text-xs border shadow-xs"
               >
-                <PenSquare className="w-3.5 h-3.5 text-sky-950" />
+                <PenSquare className="w-3.5 h-3.5" />
                 <span>Kirim Berita</span>
               </button>
             )}
 
             <button
               onClick={scrollToTop}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-950 hover:bg-yellow-400 hover:text-sky-950 text-sky-100 transition-all font-bold uppercase tracking-wider text-[11px] border border-sky-800"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:text-sky-950 text-sky-100 transition-all font-bold uppercase tracking-wider text-[11px] border border-white/20"
+              style={{
+                backgroundColor: primaryDarkColor
+              }}
             >
               <span>Kembali ke Atas</span>
               <ArrowUp className="w-3.5 h-3.5" />
@@ -93,8 +123,8 @@ export const Footer: React.FC<FooterProps> = ({
           {/* Brand Info (2 cols on lg) */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-yellow-400 flex items-center justify-center shadow-xs border-2 border-yellow-300 flex-shrink-0">
-                <span className="text-sky-950 font-black text-xl font-graffiti">A</span>
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-300 via-amber-400 to-yellow-500 flex items-center justify-center shadow-md border-2 border-yellow-200 flex-shrink-0">
+                <span className="text-sky-950 font-black text-xl font-elegant-3d">A</span>
               </div>
               <ModernGraffitiLogo 
                 size="md" 
@@ -208,9 +238,22 @@ export const Footer: React.FC<FooterProps> = ({
 
           {/* Kanal Khusus & Fitur */}
           <div>
-            <h3 className="text-white font-black text-xs uppercase tracking-wider mb-3 pb-1 border-b-2 border-yellow-400 inline-block font-mono">
-              Kanal Khusus
-            </h3>
+            <div className="flex items-center justify-between gap-2 mb-3 pb-1 border-b-2 border-yellow-400">
+              <h3 className="text-white font-black text-xs uppercase tracking-wider font-mono">
+                Kanal Khusus
+              </h3>
+              {onOpenSawerKopi && (
+                <button
+                  type="button"
+                  onClick={onOpenSawerKopi}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-yellow-400 hover:bg-yellow-300 text-sky-950 text-[10px] font-black uppercase font-mono shadow-xs cursor-pointer active:scale-95 transition-all"
+                  title="Sawer Kopi Redaksi"
+                >
+                  <Coffee className="w-3 h-3 text-sky-950" />
+                  <span>Sawer Kopi</span>
+                </button>
+              )}
+            </div>
             <ul className="space-y-2 text-sky-300 text-xs font-medium">
               <li>
                 <button
@@ -254,6 +297,27 @@ export const Footer: React.FC<FooterProps> = ({
                 </a>
               </li>
             </ul>
+
+            {/* Sawer Kopi Banner Card di Bawah Kanal Khusus */}
+            {onOpenSawerKopi && (
+              <div className="mt-4 p-3 rounded-xl bg-gradient-to-br from-amber-500/20 via-sky-900/60 to-sky-950 border border-yellow-400/50 text-left shadow-sm">
+                <div className="flex items-center gap-1.5 mb-1 text-yellow-300 font-black text-xs">
+                  <Coffee className="w-4 h-4 text-yellow-400 animate-pulse" />
+                  <span>Sawer Kopi Jurnalis</span>
+                </div>
+                <p className="text-[11px] text-sky-200 mb-2 leading-relaxed">
+                  Dukung kebebasan pers & independensi liputan kami dengan secangkir kopi.
+                </p>
+                <button
+                  type="button"
+                  onClick={onOpenSawerKopi}
+                  className="w-full py-1.5 px-3 rounded-lg bg-yellow-400 hover:bg-yellow-300 text-sky-950 text-xs font-black flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95"
+                >
+                  <Coffee className="w-3.5 h-3.5" />
+                  <span>Traktir Kopi Sekarang ☕</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Redaksi & Info Korporat */}

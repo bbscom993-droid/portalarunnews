@@ -3680,6 +3680,84 @@ ${article.tags.map(t => `#${t}`).join(', ')}
           )}
 
         </div>
+
+        {/* Mobile Sticky Reading Actions Bar (Docked at bottom of modal on mobile devices) */}
+        <div className={`md:hidden sticky bottom-0 inset-x-0 z-30 border-t px-2 py-1.5 flex items-center justify-around transition-colors shadow-[0_-4px_20px_rgba(0,0,0,0.3)] ${
+          isNightMode 
+            ? 'bg-slate-950/95 text-slate-100 border-slate-800' 
+            : isWarmMode 
+            ? 'bg-[#3b2b1b]/95 text-[#fbf4e6] border-[#553e28]' 
+            : 'bg-sky-950/95 text-white border-yellow-400/70'
+        }`}>
+          {/* Mode Nyaman (Sepia) */}
+          <button
+            type="button"
+            onClick={toggleWarmMode}
+            className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[10px] font-bold transition-all active:scale-90 cursor-pointer ${
+              isWarmMode ? 'text-amber-400 font-black' : 'text-sky-300 hover:text-white'
+            }`}
+            title="Mode Baca Nyaman (Sepia/Warm)"
+          >
+            <Coffee className="w-4 h-4 mb-0.5 text-amber-400" />
+            <span>{isWarmMode ? 'Nyaman ON' : 'Nyaman'}</span>
+          </button>
+
+          {/* Text-to-Speech Audio */}
+          <button
+            type="button"
+            onClick={handleToggleTTS}
+            className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[10px] font-bold transition-all active:scale-90 cursor-pointer ${
+              isPlayingAudio ? 'text-yellow-400 font-black' : 'text-sky-300 hover:text-white'
+            }`}
+            title="Dengarkan Berita (Text-to-Speech)"
+          >
+            {isPlayingAudio && !isPausedAudio ? (
+              <Pause className="w-4 h-4 mb-0.5 fill-yellow-400 text-yellow-400" />
+            ) : (
+              <Headphones className="w-4 h-4 mb-0.5 text-yellow-400" />
+            )}
+            <span>{isPlayingAudio ? (isPausedAudio ? 'Lanjut' : 'Jeda') : 'Dengar'}</span>
+          </button>
+
+          {/* Bagikan */}
+          <button
+            type="button"
+            onClick={handleNativeShare}
+            className="flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[10px] font-bold text-sky-300 hover:text-white transition-all active:scale-90 cursor-pointer"
+            title="Bagikan Berita"
+          >
+            <Share2 className="w-4 h-4 mb-0.5 text-yellow-400" />
+            <span>Bagikan</span>
+          </button>
+
+          {/* Bookmark / Simpan */}
+          <button
+            type="button"
+            onClick={(e) => onToggleSave(article, e)}
+            className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[10px] font-bold transition-all active:scale-90 cursor-pointer ${
+              isSaved ? 'text-yellow-400 font-black' : 'text-sky-300 hover:text-white'
+            }`}
+            title={isSaved ? 'Hapus Simpanan' : 'Simpan Berita'}
+          >
+            {isSaved ? (
+              <BookmarkCheck className="w-4 h-4 mb-0.5 text-yellow-400" />
+            ) : (
+              <Bookmark className="w-4 h-4 mb-0.5" />
+            )}
+            <span>{isSaved ? 'Tersimpan' : 'Simpan'}</span>
+          </button>
+
+          {/* Tutup */}
+          <button
+            type="button"
+            onClick={handleAttemptClose}
+            className="flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[10px] font-bold text-yellow-400 hover:text-white transition-all active:scale-90 cursor-pointer"
+            title="Tutup Halaman Berita"
+          >
+            <X className="w-4 h-4 mb-0.5" />
+            <span>Tutup</span>
+          </button>
+        </div>
       </div>
 
       {/* Anti-Buzzer Manifesto & Protection Info Modal */}

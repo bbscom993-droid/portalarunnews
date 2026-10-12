@@ -50,7 +50,7 @@ import { InteractivePoll } from './components/InteractivePoll';
 import { DailyNewsQuiz } from './components/DailyNewsQuiz';
 import { VideoNewsSection } from './components/VideoNewsSection';
 import { PhotoGallerySection } from './components/PhotoGallerySection';
-import { AiNewsAssistant } from './components/AiNewsAssistant';
+import { SawerKopiModal } from './components/SawerKopiModal';
 import { ArticleModal } from './components/ArticleModal';
 import { CitizenJournalismModal } from './components/CitizenJournalismModal';
 import { CyberMediaGuidelinesModal } from './components/CyberMediaGuidelinesModal';
@@ -58,9 +58,12 @@ import { LegalitasHub } from './components/LegalitasHub';
 import { AdvertisingModal } from './components/AdvertisingModal';
 import { AdBanner } from './components/AdBanner';
 import { SavedArticlesDrawer } from './components/SavedArticlesDrawer';
+import { MobileBottomNav } from './components/MobileBottomNav';
 import { NewsletterBanner } from './components/NewsletterBanner';
 import { WartaNotificationWidget } from './components/WartaNotificationWidget';
 import { TerkiniGoogleSection } from './components/TerkiniGoogleSection';
+import { WeatherForecastWidget } from './components/WeatherForecastWidget';
+import { applyPortalTheme, DEFAULT_PORTAL_THEME } from './utils/themeEngine';
 import { Footer } from './components/Footer';
 import { BoxRedaksiModal } from './components/editorial/BoxRedaksiModal';
 import { 
@@ -361,6 +364,9 @@ export default function App() {
             parsed.officialContacts.officePhone = '0895626941900';
           }
         }
+        if (!parsed.portalThemeSettings) {
+          parsed.portalThemeSettings = DEFAULT_PORTAL_THEME;
+        }
         return parsed;
       } catch (e) {
         return INITIAL_SITE_SETTINGS;
@@ -504,6 +510,11 @@ export default function App() {
   useEffect(() => { localStorage.setItem('wartakini_read_articles', JSON.stringify(readArticleIds)); }, [readArticleIds]);
   useEffect(() => { localStorage.setItem('wartakini_reading_progress', JSON.stringify(readingProgressMap)); }, [readingProgressMap]);
 
+  // Real-time apply portal theme colors and dynamic CSS variables
+  useEffect(() => {
+    applyPortalTheme(siteSettings.portalThemeSettings || DEFAULT_PORTAL_THEME);
+  }, [siteSettings.portalThemeSettings]);
+
   const handleUpdateReadProgress = (articleId: string, progress: number) => {
     setReadingProgressMap((prev) => {
       const current = prev[articleId] || 0;
@@ -623,28 +634,8 @@ export default function App() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'terbaru' | 'terpopuler' | 'pembaca'>('terbaru');
 
-  // Mode Kompak: Sembunyikan elemen sekunder (Kuis, Polling, Multimedia, dll)
-  const [isCompactMode, setIsCompactMode] = useState<boolean>(() => {
-    const saved = localStorage.getItem('wartakini_compact_mode');
-    if (saved !== null) {
-      try { return JSON.parse(saved); } catch (e) { return false; }
-    }
-    return false;
-  });
-
-  useEffect(() => {
-    localStorage.setItem('wartakini_compact_mode', JSON.stringify(isCompactMode));
-  }, [isCompactMode]);
-
-  const handleToggleCompactMode = (forcedValue?: boolean) => {
-    const nextVal = typeof forcedValue === 'boolean' ? forcedValue : !isCompactMode;
-    setIsCompactMode(nextVal);
-    if (nextVal) {
-      showToast('⚡ Mode Kompak Diaktifkan: Kuis, Polling, dan modul sekunder disembunyikan otomatis.');
-    } else {
-      showToast('Tampilan Penuh Diaktifkan: Semua modul interaktif kini ditampilkan kembali.');
-    }
-  };
+  // State Modal Sawer Kopi
+  const [isSawerKopiOpen, setIsSawerKopiOpen] = useState<boolean>(false);
 
   // Real-time Emergency / Breaking Alert Broadcast State
   const [activeEmergencyAlert, setActiveEmergencyAlert] = useState<{
@@ -1070,6 +1061,7 @@ export default function App() {
           dbStatus={dbState.status}
           dbArticlesCount={articles.length}
           onReconnectDB={connectFirestoreDB}
+          siteSettings={siteSettings}
         />
       )}
 
@@ -1083,9 +1075,8 @@ export default function App() {
         savedCount={savedArticleIds.length}
         onOpenSavedDrawer={() => setIsSavedDrawerOpen(true)}
         onOpenCitizenModal={() => setIsCitizenModalOpen(true)}
+        onOpenSawerKopi={() => setIsSawerKopiOpen(true)}
         siteSettings={siteSettings}
-        isCompactMode={isCompactMode}
-        onToggleCompactMode={() => handleToggleCompactMode()}
       />
 
       {/* 2.1 IKLAN PERMANEN HEADER PORTAL (Permanent Billboard Banner Ad) */}
@@ -1106,7 +1097,7 @@ export default function App() {
       )}
 
       {/* 4. Portal Body Content: Main News Feed */}
-      <main className="flex-1 max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 w-full">
+      <main className="flex-1 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-6 pb-24 lg:pb-8 w-full">
         
         {/* Slot Iklan Sisipan Atas Katalog (1200x200) */}
         <AdBanner 
@@ -1199,45 +1190,15 @@ export default function App() {
                   <h2 className="text-base sm:text-lg font-black uppercase tracking-tight text-yellow-400">
                     {selectedCategory === 'all' && !searchQuery ? 'Katalog Semua Berita Terbaru' : currentCategoryObj.name}
                   </h2>
-                  {isCompactMode && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-yellow-400 text-sky-950 uppercase tracking-wider font-mono shadow-xs">
-                      <Minimize2 className="w-3 h-3" />
-                      Mode Kompak
-                    </span>
-                  )}
                 </div>
                 <p className="text-xs text-sky-200 font-medium">
-                  {isCompactMode 
-                    ? 'Fokus warta aktif: Elemen kuis, polling, dan widget sekunder disembunyikan' 
-                    : 'Informasi faktual dan terverifikasi dari reporter Arun News'}
+                  Informasi faktual dan terverifikasi dari reporter Arun News
                 </p>
               </div>
             </div>
 
-            {/* Controls: Mode Kompak, Sort By, Rentang Waktu & View Mode Switcher */}
+            {/* Controls: Sort By, Rentang Waktu & View Mode Switcher */}
             <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
-              {/* Mode Kompak Toggle Button */}
-              <button
-                id="feed-compact-mode-toggle-btn"
-                type="button"
-                onClick={() => handleToggleCompactMode()}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95 border ${
-                  isCompactMode
-                    ? 'bg-yellow-400 text-sky-950 border-yellow-300 font-black ring-2 ring-yellow-400/40 shadow-sm'
-                    : 'bg-sky-900/90 hover:bg-sky-800 text-sky-100 border-sky-700 hover:text-white'
-                }`}
-                title={isCompactMode ? 'Mode Kompak Aktif (Klik untuk Mode Lengkap)' : 'Aktifkan Mode Kompak (Sembunyikan Kuis, Polling & Widget Sekunder)'}
-                aria-pressed={isCompactMode}
-              >
-                <Minimize2 className={`w-3.5 h-3.5 ${isCompactMode ? 'text-sky-950 animate-pulse' : 'text-yellow-400'}`} />
-                <span className="text-xs font-black">Mode Kompak</span>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-black uppercase ${
-                  isCompactMode ? 'bg-sky-950 text-yellow-300' : 'bg-sky-950/70 text-sky-300'
-                }`}>
-                  {isCompactMode ? 'ON' : 'OFF'}
-                </span>
-              </button>
-
               {/* Rentang Waktu (Time Range) Filter Dropdown */}
               <div className="flex items-center gap-1.5 bg-sky-900/90 px-3 py-1.5 rounded-xl border border-sky-700 text-xs shadow-2xs font-mono text-white">
                 <Clock className="w-3.5 h-3.5 text-yellow-400 animate-pulse" />
@@ -1300,44 +1261,19 @@ export default function App() {
 
           </div>
 
-          {/* Mode Kompak Active Status Banner */}
-          {isCompactMode && (
-            <div 
-              id="compact-mode-status-banner"
-              className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-sky-950 via-slate-900 to-sky-900 border border-yellow-400/60 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sky-100 animate-in fade-in slide-in-from-top-2 duration-200"
-            >
-              <div className="flex items-start sm:items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-yellow-400 text-sky-950 flex items-center justify-center font-bold shadow-xs shrink-0 mt-0.5 sm:mt-0">
-                  <Minimize2 className="w-4 h-4 text-sky-950" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-black text-yellow-400 uppercase tracking-wide">Mode Kompak Sedang Aktif</span>
-                    <span className="inline-block px-2 py-0.5 text-[10px] font-black bg-yellow-400/20 text-yellow-300 rounded-md border border-yellow-400/30 font-mono">
-                      Fokus Artikel
-                    </span>
-                  </div>
-                  <p className="text-xs text-sky-200 mt-0.5">
-                    Elemen sekunder (seperti bagian Kuis Berita Harian dan Polling Interaktif) disembunyikan secara otomatis untuk memberikan fokus lebih pada artikel berita.
-                  </p>
-                </div>
-              </div>
-              <button
-                id="exit-compact-mode-btn"
-                type="button"
-                onClick={() => handleToggleCompactMode(false)}
-                className="self-start sm:self-center px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 transition-all shrink-0 cursor-pointer hover:border-yellow-400/60"
-              >
-                Tampilkan Mode Lengkap
-              </button>
-            </div>
-          )}
-
           {/* Main Feed + Sidebar Responsive Grid Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             
             {/* Left Column: Articles Grid / List (8 cols) */}
-            <div className="lg:col-span-8">
+            <div className="lg:col-span-8 space-y-5">
+              {/* Weather Forecast Widget in Main Feed (uses weatherCities state) */}
+              {siteSettings.moduleToggles.showWeather && (
+                <WeatherForecastWidget
+                  weatherCities={weatherCities}
+                  className="mb-1"
+                />
+              )}
+
               {filteredArticles.length === 0 ? (
                 <div className="bg-white rounded-2xl p-12 text-center border border-sky-200 shadow-xs">
                   <div className="w-14 h-14 rounded-2xl bg-yellow-400 text-sky-950 flex items-center justify-center mx-auto mb-4 border border-yellow-500 shadow-xs">
@@ -1394,34 +1330,11 @@ export default function App() {
 
             {/* Right Column: Portal Sidebar (4 cols) */}
             <aside className="lg:col-span-4 space-y-6 sticky top-24">
-              {/* Feature 1: 'Aktifkan Notifikasi Warta' Widget or Compact Focus Card */}
-              {isCompactMode ? (
-                <div className="bg-gradient-to-br from-sky-950 via-slate-900 to-sky-900 border border-yellow-400/40 p-4 sm:p-5 rounded-2xl shadow-lg text-white">
-                  <div className="flex items-center gap-2.5 mb-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-yellow-400 text-sky-950 flex items-center justify-center font-bold shadow-xs">
-                      <Minimize2 className="w-4 h-4 text-sky-950" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-black text-yellow-400 uppercase tracking-wider font-mono">Fokus Warta</h4>
-                      <p className="text-[11px] text-sky-200">Mode Kompak Aktif</p>
-                    </div>
-                  </div>
-                  <p className="text-xs text-sky-200/90 leading-relaxed mb-3">
-                    Modul kuis, polling interaktif, dan elemen sekunder disembunyikan otomatis untuk pengalaman membaca warta yang bersih.
-                  </p>
-                  <button
-                    onClick={() => handleToggleCompactMode(false)}
-                    className="w-full py-2 px-3 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-sky-950 text-xs font-black transition-colors flex items-center justify-center gap-1.5 shadow-xs uppercase tracking-wider cursor-pointer"
-                  >
-                    Beralih ke Mode Lengkap
-                  </button>
-                </div>
-              ) : (
-                <WartaNotificationWidget
-                  onShowToast={showToast}
-                  onSimulateBreakingNews={handleSimulateBreakingNews}
-                />
-              )}
+              {/* Feature 1: 'Aktifkan Notifikasi Warta' Widget */}
+              <WartaNotificationWidget
+                onShowToast={showToast}
+                onSimulateBreakingNews={handleSimulateBreakingNews}
+              />
 
               {/* Feature: Terkini dari Google via Search Grounding */}
               <TerkiniGoogleSection />
@@ -1441,25 +1354,23 @@ export default function App() {
           </div>
         </section>
 
-        {/* Additional Magazine & Multimedia Sections (When in Main Mode & Not in Compact Mode) */}
+        {/* Additional Magazine & Multimedia Sections (When in Main Feed) */}
         {!searchQuery && selectedCategory === 'all' && (
           <>
-            {/* Slot Iklan Advertorial / Sisipan Tengah (728x90 px) - Disembunyikan saat Mode Kompak */}
-            {!isCompactMode && (
-              <AdBanner 
-                type="inline"
-                slot={inlineSlot}
-                enablePlacements={enableAdPlacements}
-                showTransparencyNotice={showAdTransparencyNotice}
-                allowPublicRentButton={allowPublicRentButton}
-                onTrackClick={handleTrackAdClick}
-                onOpenAdvertisingModal={() => setIsAdvertisingModalOpen(true)}
-                dimensions="728 x 90 px"
-                price="Rp 3.000.000 / naskah"
-                title="Ruang Iklan Advertorial & Sisipan Berita"
-                subtitle="Tempat strategis di antara Katalog Warta & Pilihan Redaksi untuk jangkauan pembaca optimal."
-              />
-            )}
+            {/* Slot Iklan Advertorial / Sisipan Tengah (728x90 px) */}
+            <AdBanner 
+              type="inline"
+              slot={inlineSlot}
+              enablePlacements={enableAdPlacements}
+              showTransparencyNotice={showAdTransparencyNotice}
+              allowPublicRentButton={allowPublicRentButton}
+              onTrackClick={handleTrackAdClick}
+              onOpenAdvertisingModal={() => setIsAdvertisingModalOpen(true)}
+              dimensions="728 x 90 px"
+              price="Rp 3.000.000 / naskah"
+              title="Ruang Iklan Advertorial & Sisipan Berita"
+              subtitle="Tempat strategis di antara Katalog Warta & Pilihan Redaksi untuk jangkauan pembaca optimal."
+            />
 
             {/* Editor's Pick & Columnist Section */}
             {siteSettings.moduleToggles.showEditorPick && (
@@ -1470,16 +1381,14 @@ export default function App() {
               />
             )}
 
-            {/* Kuis Berita Harian & Papan Peringkat (Disembunyikan Otomatis saat Mode Kompak) */}
-            {!isCompactMode && (
-              <DailyNewsQuiz
-                articles={articles}
-                onSelectArticle={handleSelectArticle}
-              />
-            )}
+            {/* Kuis Berita Harian & Papan Peringkat */}
+            <DailyNewsQuiz
+              articles={articles}
+              onSelectArticle={handleSelectArticle}
+            />
 
-            {/* Interactive Poll Component (Disembunyikan Otomatis saat Mode Kompak) */}
-            {!isCompactMode && siteSettings.moduleToggles.showPoll && (
+            {/* Interactive Poll Component */}
+            {siteSettings.moduleToggles.showPoll && (
               <div className="mb-8">
                 <InteractivePoll
                   initialPoll={pollData}
@@ -1488,18 +1397,18 @@ export default function App() {
               </div>
             )}
 
-            {/* Video News Highlights Section (Disembunyikan Otomatis saat Mode Kompak) */}
-            {!isCompactMode && siteSettings.moduleToggles.showVideoNews && (
+            {/* Video News Highlights Section */}
+            {siteSettings.moduleToggles.showVideoNews && (
               <VideoNewsSection videos={videoNews} />
             )}
 
-            {/* Photo Journalism Gallery Section (Disembunyikan Otomatis saat Mode Kompak) */}
-            {!isCompactMode && siteSettings.moduleToggles.showPhotoStories && (
+            {/* Photo Journalism Gallery Section */}
+            {siteSettings.moduleToggles.showPhotoStories && (
               <PhotoGallerySection photoStories={photoStories} />
             )}
 
-            {/* Newsletter Subscription Banner (Disembunyikan Otomatis saat Mode Kompak) */}
-            {!isCompactMode && siteSettings.moduleToggles.showNewsletter && (
+            {/* Newsletter Subscription Banner */}
+            {siteSettings.moduleToggles.showNewsletter && (
               <NewsletterBanner />
             )}
           </>
@@ -1517,6 +1426,7 @@ export default function App() {
         onOpenBoxRedaksiModal={() => setIsBoxRedaksiModalOpen(true)}
         onOpenCyberMediaGuidelinesModal={handleOpenCyberMediaGuidelines}
         onOpenAdvertisingModal={() => setIsAdvertisingModalOpen(true)}
+        onOpenSawerKopi={() => setIsSawerKopiOpen(true)}
       />
 
       {/* Advertising & Partnership Modal */}
@@ -1590,7 +1500,7 @@ export default function App() {
           id="portal-scroll-top-btn"
           type="button"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-20 right-5 z-30 p-2.5 sm:p-3 rounded-2xl bg-yellow-400 hover:bg-yellow-300 text-sky-950 font-black shadow-xl border-2 border-yellow-500 transition-all hover:scale-105 active:scale-95 flex items-center gap-1.5 cursor-pointer animate-in fade-in slide-in-from-bottom-4 duration-300 group"
+          className="fixed bottom-22 lg:bottom-6 right-4 sm:right-6 z-30 p-2.5 sm:p-3 rounded-2xl bg-yellow-400 hover:bg-yellow-300 text-sky-950 font-black shadow-xl border-2 border-yellow-500 transition-all hover:scale-105 active:scale-95 flex items-center gap-1.5 cursor-pointer animate-in fade-in slide-in-from-bottom-4 duration-300 group"
           title="Kembali ke Bagian Atas Portal (Scroll Halus)"
           aria-label="Kembali ke Atas"
         >
@@ -1599,23 +1509,44 @@ export default function App() {
         </button>
       )}
 
-      {/* Floating AI News Assistant Widget */}
-      <AiNewsAssistant
-        articles={articles}
-        onSelectArticle={handleSelectArticle}
-        currentArticle={selectedArticleForModal}
+      {/* Sawer Kopi Support Modal */}
+      <SawerKopiModal
+        isOpen={isSawerKopiOpen}
+        onClose={() => setIsSawerKopiOpen(false)}
+        onShowToast={showToast}
       />
 
       {/* Floating Toast Notification */}
       {toastMessage && (
         <div 
           id="toast-notification"
-          className="fixed bottom-20 right-6 z-50 bg-sky-950 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-2xl border-2 border-yellow-400 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-150 font-mono"
+          className="fixed bottom-22 lg:bottom-6 right-4 sm:right-6 z-50 bg-sky-950 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-2xl border-2 border-yellow-400 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-150 font-mono"
         >
           <CheckCircle className="w-4 h-4 text-yellow-400 flex-shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
+
+      {/* Adaptive Mobile Bottom Navigation Bar */}
+      <MobileBottomNav
+        selectedCategory={selectedCategory}
+        onSelectCategory={handleSelectCategory}
+        searchQuery={searchQuery}
+        onOpenSearch={() => {
+          const mobileSearchBtn = document.getElementById('mobile-search-btn');
+          if (mobileSearchBtn) {
+            mobileSearchBtn.click();
+          }
+          setTimeout(() => {
+            const input = document.getElementById('mobile-search-input-field') || document.getElementById('desktop-search-input');
+            input?.focus();
+          }, 100);
+        }}
+        savedCount={savedArticleIds.length}
+        onOpenSavedDrawer={() => setIsSavedDrawerOpen(true)}
+        onOpenCitizenModal={() => setIsCitizenModalOpen(true)}
+        isArticleOpen={!!selectedArticleForModal}
+      />
 
     </div>
   );

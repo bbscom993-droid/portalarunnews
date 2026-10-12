@@ -11,7 +11,8 @@ import {
   X,
   BadgeCheck,
   Sliders,
-  ArrowRight
+  ArrowRight,
+  MessageCircle
 } from 'lucide-react';
 import { AdSlot, SiteSettings } from '../types';
 
@@ -38,10 +39,17 @@ export const PermanentHeaderAd: React.FC<PermanentHeaderAdProps> = ({
   const effectiveTitle = slot?.title || 'Buka Tabungan Bisnis Digital & Akses Modal Usaha Tanpa Antre';
   const effectiveSubtitle = slot?.subtitle || 'Layanan perbankan digital resmi terdaftar OJK. Nikmati bebas biaya transfer, QRIS instan UMKM, dan cashback transaksi harian.';
   const effectiveBannerImage = slot?.bannerImage || 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=1200&q=80';
-  const effectiveTargetUrl = slot?.targetUrl || 'https://example.com/promo-bank-digital?utm_source=arunnews_header_permanent';
-  const effectiveCtaText = slot?.ctaText || 'Klaim Promo Digital';
   const effectiveDimensions = slot?.dimensions || '1200 x 120 px (Leaderboard Permanen)';
   const effectivePrice = slot?.priceRate || 'Rp 2.500.000 / bln';
+
+  // Link langsung ke WhatsApp Pemimpin Redaksi
+  const rawPemredWa = siteSettings?.officialContacts?.hotlineWhatsapp || siteSettings?.hotlinePhone || '0895-6269-41900';
+  const cleanPemredWa = rawPemredWa.replace(/[^0-9]/g, '');
+  const pemredWaNumber = cleanPemredWa.startsWith('0') ? '62' + cleanPemredWa.slice(1) : cleanPemredWa || '62895626941900';
+  const promoWaText = encodeURIComponent(
+    `Halo Pemimpin Redaksi Arun News, saya ingin klaim promo digital / pasang iklan di header portal untuk: "${effectiveTitle}". Mohon informasi tarif dan persyaratannya.`
+  );
+  const pemredWhatsAppUrl = `https://wa.me/${pemredWaNumber}?text=${promoWaText}`;
 
   const handleClickAd = () => {
     if (slot?.id && onTrackClick) {
@@ -193,31 +201,20 @@ export const PermanentHeaderAd: React.FC<PermanentHeaderAdProps> = ({
               </div>
             </div>
 
-            {/* Banner Right: Primary CTA Outbound Link or Direct Editorial Navigation */}
+            {/* Banner Right: Klaim Promo Digital langsung ke WhatsApp Pemimpin Redaksi */}
             <div className="flex items-center gap-2 self-stretch md:self-center flex-shrink-0 w-full md:w-auto justify-end">
-              {onNavigateToEditorial ? (
-                <button
-                  type="button"
-                  onClick={onNavigateToEditorial}
-                  className="w-full md:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 hover:from-yellow-300 hover:to-amber-300 text-sky-950 font-black text-xs font-mono tracking-wider uppercase transition-all shadow-md flex items-center justify-center gap-2 group hover:scale-[1.02] cursor-pointer active:scale-95"
-                  title="Buka Ruang Iklan di Pengaturan Redaksi"
-                >
-                  <Sliders className="w-3.5 h-3.5 text-sky-950" />
-                  <span>Pengaturan Redaksi</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-sky-950 group-hover:translate-x-0.5 transition-transform" />
-                </button>
-              ) : (
-                <a
-                  href={effectiveTargetUrl}
-                  target="_blank"
-                  rel="sponsored noopener noreferrer"
-                  onClick={handleClickAd}
-                  className="w-full md:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 hover:from-yellow-300 hover:to-amber-300 text-sky-950 font-black text-xs font-mono tracking-wider uppercase transition-all shadow-md flex items-center justify-center gap-2 group hover:scale-[1.02]"
-                >
-                  <span>{effectiveCtaText}</span>
-                  <ExternalLink className="w-3.5 h-3.5 text-sky-950 group-hover:translate-x-0.5 transition-transform" />
-                </a>
-              )}
+              <a
+                href={pemredWhatsAppUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={handleClickAd}
+                className="w-full md:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 hover:from-emerald-400 hover:to-green-500 text-white font-black text-xs font-mono tracking-wider uppercase transition-all shadow-md flex items-center justify-center gap-2 group hover:scale-[1.02] active:scale-95 cursor-pointer border border-emerald-400"
+                title="Klaim Promo Digital Langsung ke WhatsApp Pemimpin Redaksi"
+              >
+                <MessageCircle className="w-4 h-4 fill-white text-emerald-600 group-hover:scale-110 transition-transform" />
+                <span>Klaim Promo Digital</span>
+                <ExternalLink className="w-3.5 h-3.5 text-emerald-100 group-hover:translate-x-0.5 transition-transform" />
+              </a>
             </div>
           </div>
         ) : (
@@ -227,25 +224,17 @@ export const PermanentHeaderAd: React.FC<PermanentHeaderAdProps> = ({
               <span className="font-bold text-yellow-400 truncate">{effectiveAdvertiser}:</span>
               <span className="text-white truncate">{effectiveTitle}</span>
             </div>
-            {onNavigateToEditorial ? (
-              <button
-                type="button"
-                onClick={onNavigateToEditorial}
-                className="text-[11px] font-bold text-yellow-400 hover:text-yellow-300 whitespace-nowrap flex items-center gap-1 cursor-pointer"
-              >
-                <span>Pengaturan Redaksi &rarr;</span>
-              </button>
-            ) : (
-              <a
-                href={effectiveTargetUrl}
-                target="_blank"
-                rel="sponsored noopener noreferrer"
-                onClick={handleClickAd}
-                className="text-[11px] font-bold text-yellow-400 hover:text-yellow-300 whitespace-nowrap flex items-center gap-1"
-              >
-                <span>{effectiveCtaText} &rarr;</span>
-              </a>
-            )}
+            <a
+              href={pemredWhatsAppUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={handleClickAd}
+              className="text-[11px] font-black text-emerald-400 hover:text-emerald-300 whitespace-nowrap flex items-center gap-1 cursor-pointer"
+              title="Klaim Promo Digital Langsung ke WhatsApp Pemimpin Redaksi"
+            >
+              <MessageCircle className="w-3 h-3 fill-emerald-400 text-sky-950" />
+              <span>Klaim Promo Digital (WhatsApp Pemred) &rarr;</span>
+            </a>
           </div>
         )}
       </div>

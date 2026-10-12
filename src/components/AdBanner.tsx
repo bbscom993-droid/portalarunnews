@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Megaphone, ExternalLink, Info, Sparkles, Sliders, X } from 'lucide-react';
-import { AdSlot } from '../types';
+import { Megaphone, ExternalLink, Info, Sparkles, Sliders, X, MessageCircle } from 'lucide-react';
+import { AdSlot, SiteSettings } from '../types';
 
 interface AdBannerProps {
   type: 'header' | 'sidebar' | 'inline';
   onOpenAdvertisingModal?: () => void;
   onNavigateToEditorial?: () => void;
+  siteSettings?: SiteSettings;
   title?: string;
   subtitle?: string;
   dimensions?: string;
@@ -28,6 +29,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
   type,
   onOpenAdvertisingModal,
   onNavigateToEditorial,
+  siteSettings,
   title,
   subtitle,
   dimensions,
@@ -53,7 +55,19 @@ export const AdBanner: React.FC<AdBannerProps> = ({
   const effectiveDim = slot?.dimensions || dimensions;
   const effectiveImage = slot?.bannerImage;
   const effectiveUrl = slot?.targetUrl;
-  const effectiveCta = slot?.ctaText || 'Kunjungi Mitra';
+
+  // Nomor WhatsApp Redaksi & Link Langsung WhatsApp
+  const rawWa = siteSettings?.officialContacts?.hotlineWhatsapp || siteSettings?.hotlinePhone || '0895-6269-41900';
+  const cleanWa = rawWa.replace(/[^0-9]/g, '');
+  const waNumber = cleanWa.startsWith('0') ? '62' + cleanWa.slice(1) : cleanWa || '62895626941900';
+  const redaksiWaUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(
+    `Halo Redaksi Arun News, saya ingin menghubungi redaksi terkait informasi mitra dan pemasangan iklan portal untuk: "${effectiveTitle || 'Iklan Portal'}".`
+  )}`;
+
+  // Ganti 'Kunjungi Mitra' menjadi 'Hubungi Redaksi' langsung link ke WhatsApp
+  const isKunjungiMitra = !slot?.ctaText || slot.ctaText === 'Kunjungi Mitra' || slot.ctaText.toLowerCase().includes('mitra');
+  const effectiveCta = isKunjungiMitra ? 'Hubungi Redaksi' : slot.ctaText;
+  const effectiveTargetUrl = (!effectiveUrl || effectiveUrl.includes('example.com') || isKunjungiMitra) ? redaksiWaUrl : effectiveUrl;
 
   const handleClickBanner = () => {
     if (slot && onTrackClick) {
@@ -201,37 +215,18 @@ export const AdBanner: React.FC<AdBannerProps> = ({
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-2.5 flex-shrink-0 w-full md:w-auto">
-              {onNavigateToEditorial ? (
-                <button
-                  type="button"
-                  onClick={onNavigateToEditorial}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 hover:from-yellow-300 hover:to-amber-300 text-sky-950 font-black text-xs font-mono tracking-wider uppercase transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer group-hover:scale-102 active:scale-95"
-                  title="Kelola Ruang Iklan di Pengaturan Redaksi"
-                >
-                  <Sliders className="w-4 h-4 text-sky-950" />
-                  <span>Pengaturan Redaksi &rarr;</span>
-                </button>
-              ) : effectiveUrl ? (
-                <a
-                  href={effectiveUrl}
-                  target="_blank"
-                  rel="sponsored nofollow noopener noreferrer"
-                  onClick={handleClickBanner}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-sky-950 font-black text-xs font-mono tracking-wider uppercase transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer group-hover:scale-102"
-                >
-                  <span>{effectiveCta}</span>
-                  <ExternalLink className="w-4 h-4" />
-                </a>
-              ) : (
-                <button
-                  type="button"
-                  onClick={onOpenAdvertisingModal}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-sky-950 font-black text-xs font-mono tracking-wider uppercase transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer group-hover:scale-102"
-                >
-                  <Megaphone className="w-4 h-4 fill-sky-950" />
-                  <span>{sampleBrand?.ctaText || 'Pasang Iklan Di Sini'}</span>
-                </button>
-              )}
+              <a
+                href={effectiveTargetUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={handleClickBanner}
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 hover:from-emerald-400 hover:to-green-500 text-white font-black text-xs font-mono tracking-wider uppercase transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer group-hover:scale-102 active:scale-95 border border-emerald-400"
+                title="Hubungi Redaksi via WhatsApp"
+              >
+                <MessageCircle className="w-4 h-4 fill-white text-emerald-600" />
+                <span>{effectiveCta}</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
             </div>
           </div>
         </div>
@@ -277,27 +272,18 @@ export const AdBanner: React.FC<AdBannerProps> = ({
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto justify-end flex-shrink-0">
-            {effectiveUrl ? (
-              <a
-                href={effectiveUrl}
-                target="_blank"
-                rel="sponsored nofollow noopener noreferrer"
-                onClick={handleClickBanner}
-                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-sky-950 hover:bg-sky-900 text-yellow-400 font-black text-xs font-mono flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer whitespace-nowrap"
-              >
-                <span>{effectiveCta}</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            ) : (
-              <button
-                type="button"
-                onClick={onOpenAdvertisingModal}
-                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-sky-950 hover:bg-sky-900 text-yellow-400 font-black text-xs font-mono flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer whitespace-nowrap"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-yellow-400" />
-                <span>Pasang Iklan • {effectivePrice || 'Rp 1.500.000'}</span>
-              </button>
-            )}
+            <a
+              href={effectiveTargetUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={handleClickBanner}
+              className="w-full sm:w-auto px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs font-mono flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer whitespace-nowrap border border-emerald-400 active:scale-95"
+              title="Hubungi Redaksi via WhatsApp"
+            >
+              <MessageCircle className="w-3.5 h-3.5 fill-white text-emerald-700" />
+              <span>{effectiveCta}</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
           </div>
         </div>
       </div>
@@ -343,27 +329,18 @@ export const AdBanner: React.FC<AdBannerProps> = ({
           </div>
         </div>
 
-        {effectiveUrl ? (
-          <a
-            href={effectiveUrl}
-            target="_blank"
-            rel="sponsored nofollow noopener noreferrer"
-            onClick={handleClickBanner}
-            className="w-full py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-sky-950 font-black text-xs font-mono uppercase tracking-wider transition-colors shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer"
-          >
-            <span>{effectiveCta}</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </a>
-        ) : (
-          <button
-            type="button"
-            onClick={onOpenAdvertisingModal}
-            className="w-full py-2 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-sky-950 font-black text-xs font-mono uppercase tracking-wider transition-colors shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer"
-          >
-            <Megaphone className="w-3.5 h-3.5 fill-sky-950" />
-            <span>Sewa Space Sidebar</span>
-          </button>
-        )}
+        <a
+          href={effectiveTargetUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={handleClickBanner}
+          className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs font-mono uppercase tracking-wider transition-colors shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer border border-emerald-400 active:scale-95"
+          title="Hubungi Redaksi via WhatsApp"
+        >
+          <MessageCircle className="w-3.5 h-3.5 fill-white text-emerald-700" />
+          <span>{effectiveCta}</span>
+          <ExternalLink className="w-3.5 h-3.5" />
+        </a>
       </div>
     </div>
   );

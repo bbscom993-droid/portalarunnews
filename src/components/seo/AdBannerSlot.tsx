@@ -25,7 +25,9 @@ export const AdBannerSlot: React.FC<AdBannerSlotProps> = ({
   // Fallback defaults if slot not explicitly passed
   const adTitle = slot?.advertiserName || 'Sponsor Terverifikasi Arun News';
   const adImage = slot?.bannerImage || 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=1200&q=80';
-  const targetUrl = slot?.targetUrl || 'https://arunnews.id/info-iklan';
+  const targetUrl = slot?.targetUrl && !slot.targetUrl.includes('example.com')
+    ? slot.targetUrl
+    : 'https://wa.me/62895626941900?text=' + encodeURIComponent('Halo Redaksi Arun News, saya ingin menghubungi redaksi terkait informasi mitra dan iklan portal.');
 
   if (position === 'top_billboard') {
     return (
@@ -77,8 +79,8 @@ export const AdBannerSlot: React.FC<AdBannerSlotProps> = ({
             </div>
 
             <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-sky-950 font-black text-xs transition-all shadow-xs flex-shrink-0">
-                <span>Kunjungi Mitra</span>
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-black text-xs transition-all shadow-xs flex-shrink-0">
+                <span>Hubungi Redaksi</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </span>
             </div>

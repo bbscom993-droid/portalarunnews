@@ -5,7 +5,6 @@ import { AdSlot, SiteSettings } from '../types';
 interface AdBannerProps {
   type: 'header' | 'sidebar' | 'inline';
   onOpenAdvertisingModal?: () => void;
-  onNavigateToEditorial?: () => void;
   siteSettings?: SiteSettings;
   title?: string;
   subtitle?: string;
@@ -28,7 +27,6 @@ interface AdBannerProps {
 export const AdBanner: React.FC<AdBannerProps> = ({
   type,
   onOpenAdvertisingModal,
-  onNavigateToEditorial,
   siteSettings,
   title,
   subtitle,
@@ -93,11 +91,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-r from-sky-950 via-sky-900 to-sky-950 border border-sky-800 shadow-md transition-all hover:shadow-lg">
           {/* Top Label with Size Selector & Rent Button */}
           <div className="bg-sky-900/90 text-sky-200 text-[10px] font-mono px-3 py-1.5 border-b border-sky-800/80 flex flex-wrap items-center justify-between gap-2">
-            <div 
-              onClick={onNavigateToEditorial}
-              className={`flex items-center gap-2 font-bold uppercase tracking-wider ${onNavigateToEditorial ? 'cursor-pointer hover:text-yellow-300' : ''}`}
-              title={onNavigateToEditorial ? 'Buka Pengaturan Redaksi' : undefined}
-            >
+            <div className="flex items-center gap-2 font-bold uppercase tracking-wider">
               <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
               <span>{slot?.badgeText || 'Ruang Iklan Header'}</span>
               <span className="bg-yellow-400/20 text-yellow-300 px-1.5 py-0.5 rounded border border-yellow-400/30 text-[9px]">
@@ -147,17 +141,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
 
               <span className="text-yellow-400 font-bold">{effectivePrice || currentPrice}</span>
 
-              {onNavigateToEditorial ? (
-                <button
-                  type="button"
-                  onClick={onNavigateToEditorial}
-                  className="bg-yellow-400 hover:bg-yellow-300 text-sky-950 text-[10px] font-black px-2.5 py-0.5 rounded transition-all shadow-xs flex items-center gap-1 cursor-pointer active:scale-95"
-                  title="Kelola Ruang Iklan Header di Pengaturan Redaksi"
-                >
-                  <Sliders className="w-3 h-3 text-sky-950" />
-                  <span>Pengaturan Redaksi</span>
-                </button>
-              ) : allowPublicRentButton && (
+              {allowPublicRentButton && (
                 <button
                   type="button"
                   onClick={onOpenAdvertisingModal}
@@ -188,11 +172,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
 
           {/* Banner Content Area */}
           <div className={`${sizeClasses[headerAdSize]} flex flex-col md:flex-row items-center justify-between gap-4 transition-all duration-300`}>
-            <div 
-              onClick={onNavigateToEditorial}
-              className={`flex items-center gap-4 text-center md:text-left w-full md:w-auto ${onNavigateToEditorial ? 'cursor-pointer group/card' : ''}`}
-              title={onNavigateToEditorial ? 'Klik untuk kelola iklan di Pengaturan Redaksi' : undefined}
-            >
+            <div className="flex items-center gap-4 text-center md:text-left w-full md:w-auto">
               {effectiveImage && (
                 <img
                   src={effectiveImage}

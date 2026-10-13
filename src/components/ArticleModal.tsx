@@ -68,6 +68,7 @@ import {
   getCommentsFromIndexedDB 
 } from '../utils/offlineStorage';
 import { saveCommentToDB, fetchCommentsFromDB } from '../services/dbClient';
+import { UniversalShareModal } from './UniversalShareModal';
 
 interface ReactionItem {
   emoji: string;
@@ -1105,19 +1106,45 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
   const handleNativeShare = async () => {
     if (!article) return;
     const shareUrl = getArticleShareUrl();
+    const shareText = getArticleShareText();
     const shareData = {
       title: `${article.title} - Arun News`,
-      text: getArticleShareText(),
+      text: shareText,
       url: shareUrl,
     };
 
     if (typeof navigator !== 'undefined' && 'share' in navigator) {
       try {
+        let file: File | null = null;
+        if (article.imageUrl && navigator.canShare) {
+          try {
+            const resp = await fetch(article.imageUrl, { mode: 'cors' });
+            if (resp.ok) {
+              const blob = await resp.blob();
+              file = new File([blob], `${article.slug || 'arun-news'}.jpg`, { type: blob.type || 'image/jpeg' });
+            }
+          } catch {}
+        }
+
+        if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: `${article.title} - Arun News`,
+            text: shareText,
+            url: shareUrl,
+          });
+          handleTrackShare('native_files');
+          return;
+        }
+
         await navigator.share(shareData);
+        handleTrackShare('native');
+        return;
       } catch (err) {
         if ((err as Error).name !== 'AbortError') {
           setIsShareModalOpen(true);
         }
+        return;
       }
     } else {
       setIsShareModalOpen(true);
@@ -2321,142 +2348,7 @@ ${article.tags.map(t => `#${t}`).join(', ')}
 
               {!isFocusMode && (
                 <>
-                  {/* Top Quick Social Media Share Bar */}
-                  <div className={`flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl border shadow-2xs mb-6 transition-colors ${
-                    isNightMode
-                      ? 'bg-slate-900 border-slate-800 text-slate-200'
-                      : 'bg-white border-sky-200 text-sky-950'
-                  }`}>
-                <div className={`flex items-center gap-1.5 text-xs font-bold font-mono ${
-                  isNightMode ? 'text-yellow-300' : 'text-sky-950'
-                }`}>
-                  <Share2 className="w-4 h-4 text-yellow-500" />
-                  <span>BAGIKAN BERITA:</span>
-                </div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  {/* WhatsApp */}
-                  <a
-                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`${getArticleShareText()}\n\n${getArticleShareUrl()}`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => handleTrackShare('whatsapp')}
-                    className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all shadow-2xs cursor-pointer hover:scale-105 active:scale-95"
-                    title="Bagikan Warta Berita ke WhatsApp"
-                  >
-                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/>
-                    </svg>
-                    <span>WhatsApp</span>
-                    <span className="px-1.5 py-0.5 rounded-md text-[10px] font-mono font-black bg-white/20 text-white shadow-2xs">
-                      {(shareCounts.whatsapp || 0).toLocaleString('id-ID')}
-                    </span>
-                    {lastSharedPlatform === 'whatsapp' && (
-                      <span className="absolute -top-3 -right-1 bg-yellow-400 text-sky-950 font-mono font-black text-[10px] px-1.5 py-0.5 rounded-full border border-yellow-600 animate-bounce shadow-xs z-20">
-                        +1
-                      </span>
-                    )}
-                  </a>
-
-                  {/* Twitter / X */}
-                  <a
-                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(getArticleShareText())}&url=${encodeURIComponent(getArticleShareUrl())}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => handleTrackShare('twitter')}
-                    className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-all shadow-2xs cursor-pointer hover:scale-105 active:scale-95 border border-slate-700"
-                    title="Bagikan Warta Berita ke Twitter / X"
-                  >
-                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                    </svg>
-                    <span>Twitter / X</span>
-                    <span className="px-1.5 py-0.5 rounded-md text-[10px] font-mono font-black bg-slate-800 text-slate-200 border border-slate-700">
-                      {(shareCounts.twitter || 0).toLocaleString('id-ID')}
-                    </span>
-                    {lastSharedPlatform === 'twitter' && (
-                      <span className="absolute -top-3 -right-1 bg-yellow-400 text-sky-950 font-mono font-black text-[10px] px-1.5 py-0.5 rounded-full border border-yellow-600 animate-bounce shadow-xs z-20">
-                        +1
-                      </span>
-                    )}
-                  </a>
-
-                  {/* Facebook */}
-                  <a
-                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(getArticleShareUrl())}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => handleTrackShare('facebook')}
-                    className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all shadow-2xs cursor-pointer hover:scale-105 active:scale-95"
-                    title="Bagikan Warta Berita ke Facebook"
-                  >
-                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                    </svg>
-                    <span>Facebook</span>
-                    <span className="px-1.5 py-0.5 rounded-md text-[10px] font-mono font-black bg-white/20 text-white shadow-2xs">
-                      {(shareCounts.facebook || 0).toLocaleString('id-ID')}
-                    </span>
-                    {lastSharedPlatform === 'facebook' && (
-                      <span className="absolute -top-3 -right-1 bg-yellow-400 text-sky-950 font-mono font-black text-[10px] px-1.5 py-0.5 rounded-full border border-yellow-600 animate-bounce shadow-xs z-20">
-                        +1
-                      </span>
-                    )}
-                  </a>
-
-                  {/* TikTok Share */}
-                  <button
-                    type="button"
-                    onClick={handleShareToTikTok}
-                    className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black hover:bg-slate-900 text-white font-bold text-xs transition-all shadow-2xs cursor-pointer hover:scale-105 active:scale-95 border border-slate-700"
-                    title="Bagikan Warta Berita ke TikTok (Salin Teks & Tagar)"
-                  >
-                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.298 0 .592.046.87.136V9.4a6.33 6.33 0 0 0-1-.08A6.34 6.34 0 0 0 3 15.66a6.34 6.34 0 0 0 10.82 4.47 6.27 6.27 0 0 0 1.93-4.5V9.01a8.28 8.28 0 0 0 4.84 1.55v-3.5a4.83 4.83 0 0 1-1-.37z"/>
-                    </svg>
-                    <span>TikTok</span>
-                  </button>
-
-                  {/* YouTube Share */}
-                  <button
-                    type="button"
-                    onClick={handleShareToYouTube}
-                    className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs transition-all shadow-2xs cursor-pointer hover:scale-105 active:scale-95"
-                    title="Bagikan Warta Berita ke YouTube (Salin Deskripsi)"
-                  >
-                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                    </svg>
-                    <span>YouTube</span>
-                  </button>
-
-                  {/* Salin Link */}
-                  <button
-                    type="button"
-                    onClick={handleCopyLink}
-                    className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-2xs border cursor-pointer ${
-                      copiedLink
-                        ? 'bg-emerald-600 text-white border-emerald-700'
-                        : 'bg-yellow-400 hover:bg-yellow-300 text-sky-950 border-yellow-500'
-                    }`}
-                    title="Salin Link Artikel"
-                  >
-                    {copiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedLink ? 'Tersalin!' : 'Salin Tautan'}</span>
-                    <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono font-black ${
-                      copiedLink ? 'bg-white/20 text-white' : 'bg-sky-950/20 text-sky-950'
-                    }`}>
-                      {(shareCounts.copy || 0).toLocaleString('id-ID')}
-                    </span>
-                    {lastSharedPlatform === 'copy' && (
-                      <span className="absolute -top-3 -right-1 bg-yellow-400 text-sky-950 font-mono font-black text-[10px] px-1.5 py-0.5 rounded-full border border-yellow-600 animate-bounce shadow-xs z-20">
-                        +1
-                      </span>
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Read Aloud Web Speech API Audio Player Bar */}
+                  {/* Read Aloud Web Speech API Audio Player Bar */}
               <div className="bg-gradient-to-r from-sky-950 via-sky-900 to-indigo-950 text-white rounded-2xl p-4 sm:p-5 mb-6 shadow-xl border border-sky-800 flex flex-col gap-4 animate-in fade-in duration-200 relative overflow-hidden">
                 {/* Background glow accent */}
                 <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-400/5 rounded-full blur-3xl pointer-events-none"></div>
@@ -3959,332 +3851,13 @@ ${article.tags.map(t => `#${t}`).join(', ')}
         </div>
       )}
 
-      {/* MODAL: Bagikan Berita */}
-      {isShareModalOpen && (
-        <div 
-          className="fixed inset-0 z-60 bg-sky-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
-          onClick={() => setIsShareModalOpen(false)}
-        >
-          <div 
-            className="bg-white rounded-2xl max-w-md w-full p-6 border-2 border-yellow-400 shadow-2xl relative animate-in zoom-in-95 duration-150"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close Button */}
-            <button
-              onClick={() => setIsShareModalOpen(false)}
-              className="absolute top-4 right-4 p-2 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
-              aria-label="Tutup Modal Bagikan"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            {/* Modal Header */}
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-yellow-400 text-sky-950 flex items-center justify-center font-black shadow-md border border-yellow-500">
-                <Share2 className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-base font-black text-sky-950 uppercase tracking-tight">
-                  Bagikan Warta Berita
-                </h3>
-                <p className="text-[11px] text-sky-700 font-bold">
-                  Sampaikan informasi tepercaya ke media sosial & rekan Anda
-                </p>
-              </div>
-            </div>
-
-            {/* Article Preview Box */}
-            <div className="p-3 bg-sky-50 rounded-xl border border-sky-200 mb-5 flex items-center gap-3">
-              {article.imageUrl && (
-                <img
-                  src={article.imageUrl}
-                  alt={article.title}
-                  referrerPolicy="no-referrer"
-                  className="w-14 h-14 rounded-lg object-cover border border-sky-200 flex-shrink-0"
-                />
-              )}
-              <div className="min-w-0 flex-1">
-                <span className="px-1.5 py-0.5 rounded bg-sky-950 text-yellow-400 text-[9px] font-bold font-mono uppercase">
-                  {article.categoryLabel}
-                </span>
-                <h4 className="text-xs font-bold text-sky-950 line-clamp-2 mt-1 leading-snug">
-                  {article.title}
-                </h4>
-              </div>
-            </div>
-
-            {/* Copy Link Input Box */}
-            <div className="mb-5">
-              <label className="block text-xs font-bold text-sky-950 mb-1.5 font-mono uppercase">
-                Tautan Artikel:
-              </label>
-              <div className="flex items-center gap-1.5 p-1.5 bg-slate-100 rounded-xl border border-slate-300">
-                <input
-                  type="text"
-                  readOnly
-                  value={getArticleShareUrl()}
-                  className="w-full bg-transparent px-2 text-xs font-mono text-slate-700 font-semibold focus:outline-none truncate"
-                />
-                <button
-                  type="button"
-                  onClick={handleCopyLink}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 flex-shrink-0 cursor-pointer ${
-                    copiedLink
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-yellow-400 hover:bg-yellow-300 text-sky-950 shadow-xs'
-                  }`}
-                >
-                  {copiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                  <span>{copiedLink ? 'Tersalin!' : 'Salin'}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* APA Citation Copy Box */}
-            <div className="mb-5 p-3 rounded-xl bg-slate-50 border border-slate-200">
-              <div className="flex items-center justify-between text-xs font-bold font-mono text-sky-950 uppercase mb-1.5">
-                <span className="flex items-center gap-1.5">
-                  <Quote className="w-3.5 h-3.5 text-yellow-500" />
-                  Sitasi Formal (Format APA):
-                </span>
-                <button
-                  type="button"
-                  onClick={handleCopyCitation}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
-                    copiedCitation
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-yellow-400 hover:bg-yellow-300 text-sky-950 shadow-xs'
-                  }`}
-                  title="Salin sitasi formal format APA 7th edition"
-                >
-                  {copiedCitation ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                  <span>{copiedCitation ? 'Tersalin!' : 'Salin Sitasi'}</span>
-                </button>
-              </div>
-              <p className="text-[11px] font-mono text-slate-700 leading-relaxed select-all bg-white p-2 rounded-lg border border-slate-200">
-                {generateApaCitation()}
-              </p>
-            </div>
-
-            {/* Kirim Langsung ke Nomor WhatsApp Tujuan */}
-            <div className="mb-5 p-3.5 rounded-xl bg-emerald-50/90 border border-emerald-300">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold font-mono text-emerald-950 uppercase flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                  Kirim ke Nomor WhatsApp Tujuan:
-                </span>
-                <span className="text-[10px] font-bold text-emerald-800 bg-emerald-200/70 px-2 py-0.5 rounded-md border border-emerald-300">
-                  📸 Foto Berita Otomatis Muncul
-                </span>
-              </div>
-              <form onSubmit={handleSendToSpecificWa} className="flex flex-col sm:flex-row gap-2">
-                <div className="relative flex-1">
-                  <span className="absolute left-3 top-2.5 text-xs text-emerald-700 font-mono font-bold">+62 / 08</span>
-                  <input
-                    type="tel"
-                    value={targetWaNumber}
-                    onChange={(e) => {
-                      setTargetWaNumber(e.target.value);
-                      if (waSendError) setWaSendError(null);
-                    }}
-                    placeholder="8123456789 atau 08123456789"
-                    className="w-full pl-20 pr-3 py-2 text-xs font-mono bg-white border border-emerald-300 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95 whitespace-nowrap"
-                  title="Kirim berita langsung ke nomor WhatsApp yang dituju"
-                >
-                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/>
-                  </svg>
-                  <span>Kirim ke No WA Ini</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </form>
-              {waSendError && (
-                <p className="text-[11px] text-rose-600 font-medium mt-1.5 flex items-center gap-1">
-                  <span>⚠️</span> {waSendError}
-                </p>
-              )}
-              <p className="text-[10px] text-emerald-800/90 mt-2 leading-relaxed">
-                💡 <strong>Pratinjau Otomatis:</strong> Saat link ini terkirim ke WhatsApp tujuan, server Arun News secara instan menyuplai meta tag <code>og:image</code> sehingga foto berita dan judul lengkap langsung muncul di layar chat penerima.
-              </p>
-            </div>
-
-            {/* Pratinjau Tampilan Link di WhatsApp (Card Preview) */}
-            <div className="mb-5 p-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-200">
-              <div className="flex items-center justify-between text-[11px] font-mono text-emerald-400 font-bold mb-2">
-                <span className="flex items-center gap-1.5">
-                  <span>📱</span> Pratinjau Tampilan di WhatsApp Penerima:
-                </span>
-                <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full">
-                  ✓ Foto Berita Siap Muncul
-                </span>
-              </div>
-              <div className="bg-[#0b141a] rounded-xl p-2.5 border border-slate-700/60 shadow-inner max-w-sm mx-auto">
-                <div className="bg-[#1f2c34] rounded-lg overflow-hidden border border-slate-700">
-                  <div className="relative aspect-video w-full overflow-hidden bg-slate-800">
-                    <img
-                      src={article.imageUrl}
-                      alt={article.title}
-                      className="w-full h-full object-cover"
-                    />
-                    <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 bg-black/75 text-[9px] text-amber-300 font-mono rounded">
-                      {article.categoryLabel || article.category}
-                    </span>
-                  </div>
-                  <div className="p-2.5">
-                    <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1 flex items-center justify-between">
-                      <span className="text-emerald-400 font-bold">ARUNNEWS.ID</span>
-                      <span>{article.readTime}</span>
-                    </div>
-                    <h5 className="text-xs font-bold text-white line-clamp-2 leading-snug mb-1">
-                      {article.title}
-                    </h5>
-                    <p className="text-[11px] text-slate-300 line-clamp-2 leading-relaxed">
-                      {article.excerpt || (article.paragraphs ? article.paragraphs[0] : '')}
-                    </p>
-                  </div>
-                </div>
-                <div className="mt-2 text-[10px] text-emerald-400/90 font-mono text-center flex items-center justify-center gap-1">
-                  <span>🛡️</span> Server menyuplai meta <code>og:image</code> &amp; <code>og:title</code> ke bot WhatsApp
-                </div>
-              </div>
-            </div>
-
-            {/* Social Share Grid */}
-            <div className="space-y-2 mb-5">
-              <label className="block text-xs font-bold text-sky-950 font-mono uppercase">
-                Atau Pilih Aplikasi Media Sosial:
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                {/* WhatsApp */}
-                <a
-                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`${getArticleShareText()}\n\n${getArticleShareUrl()}`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => handleTrackShare('whatsapp')}
-                  className="relative flex items-center justify-between gap-1.5 p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all shadow-xs cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/>
-                    </svg>
-                    <span>WhatsApp</span>
-                  </div>
-                  <span className="px-1.5 py-0.5 rounded-md text-[10px] font-mono font-black bg-white/20 text-white shadow-2xs">
-                    {(shareCounts.whatsapp || 0).toLocaleString('id-ID')}
-                  </span>
-                  {lastSharedPlatform === 'whatsapp' && (
-                    <span className="absolute -top-3 right-1 bg-yellow-400 text-sky-950 font-mono font-black text-[10px] px-1.5 py-0.5 rounded-full border border-yellow-600 animate-bounce shadow-xs z-20">
-                      +1
-                    </span>
-                  )}
-                </a>
-
-                {/* Twitter / X */}
-                <a
-                  href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(getArticleShareText())}&url=${encodeURIComponent(getArticleShareUrl())}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => handleTrackShare('twitter')}
-                  className="relative flex items-center justify-between gap-1.5 p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-all shadow-xs cursor-pointer hover:scale-[1.02] active:scale-[0.98] border border-slate-700"
-                >
-                  <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                    </svg>
-                    <span>Twitter / X</span>
-                  </div>
-                  <span className="px-1.5 py-0.5 rounded-md text-[10px] font-mono font-black bg-slate-800 text-slate-200 border border-slate-700">
-                    {(shareCounts.twitter || 0).toLocaleString('id-ID')}
-                  </span>
-                  {lastSharedPlatform === 'twitter' && (
-                    <span className="absolute -top-3 right-1 bg-yellow-400 text-sky-950 font-mono font-black text-[10px] px-1.5 py-0.5 rounded-full border border-yellow-600 animate-bounce shadow-xs z-20">
-                      +1
-                    </span>
-                  )}
-                </a>
-
-                {/* Facebook */}
-                <a
-                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(getArticleShareUrl())}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => handleTrackShare('facebook')}
-                  className="relative flex items-center justify-between gap-1.5 p-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all shadow-xs cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                    </svg>
-                    <span>Facebook</span>
-                  </div>
-                  <span className="px-1.5 py-0.5 rounded-md text-[10px] font-mono font-black bg-white/20 text-white shadow-2xs">
-                    {(shareCounts.facebook || 0).toLocaleString('id-ID')}
-                  </span>
-                  {lastSharedPlatform === 'facebook' && (
-                    <span className="absolute -top-3 right-1 bg-yellow-400 text-sky-950 font-mono font-black text-[10px] px-1.5 py-0.5 rounded-full border border-yellow-600 animate-bounce shadow-xs z-20">
-                      +1
-                    </span>
-                  )}
-                </a>
-
-                {/* Telegram */}
-                <a
-                  href={`https://t.me/share/url?url=${encodeURIComponent(getArticleShareUrl())}&text=${encodeURIComponent(getArticleShareText())}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => handleTrackShare('telegram')}
-                  className="relative flex items-center justify-between gap-1.5 p-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-bold text-xs transition-all shadow-xs cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  <div className="flex items-center gap-2">
-                    <Send className="w-4 h-4" />
-                    <span>Telegram</span>
-                  </div>
-                  <span className="px-1.5 py-0.5 rounded-md text-[10px] font-mono font-black bg-white/20 text-white shadow-2xs">
-                    {(shareCounts.telegram || 0).toLocaleString('id-ID')}
-                  </span>
-                  {lastSharedPlatform === 'telegram' && (
-                    <span className="absolute -top-3 right-1 bg-yellow-400 text-sky-950 font-mono font-black text-[10px] px-1.5 py-0.5 rounded-full border border-yellow-600 animate-bounce shadow-xs z-20">
-                      +1
-                    </span>
-                  )}
-                </a>
-              </div>
-            </div>
-
-            {/* Email Share & Close Option */}
-            <div className="pt-3 border-t border-slate-200 flex flex-col gap-2">
-              <a
-                href={`mailto:?subject=${encodeURIComponent(article.title)}&body=${encodeURIComponent(`${getArticleShareText()}\n\nBaca selengkapnya di: ${getArticleShareUrl()}`)}`}
-                onClick={() => handleTrackShare('email')}
-                className="relative w-full py-2 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-950 font-bold text-xs border border-amber-300 transition-colors flex items-center justify-between gap-2"
-              >
-                <span>📧 Kirim via Email / Gmail</span>
-                <span className="px-1.5 py-0.5 rounded-md text-[10px] font-mono font-black bg-amber-200/60 text-amber-950">
-                  {(shareCounts.email || 0).toLocaleString('id-ID')}
-                </span>
-                {lastSharedPlatform === 'email' && (
-                  <span className="absolute -top-3 right-3 bg-yellow-400 text-sky-950 font-mono font-black text-[10px] px-1.5 py-0.5 rounded-full border border-yellow-600 animate-bounce shadow-xs z-20">
-                    +1
-                  </span>
-                )}
-              </a>
-
-              <button
-                type="button"
-                onClick={() => setIsShareModalOpen(false)}
-                className="w-full py-2 text-xs font-bold text-slate-500 hover:text-slate-800 text-center transition-colors cursor-pointer"
-              >
-                Tutup Window
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* MODAL: Bagikan Berita Universal (Foto, Teks & Link Kemana Aja) */}
+      <UniversalShareModal
+        article={article}
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        onTrackShare={handleTrackShare}
+      />
 
       {/* Confirmation Dialog Modal when user attempts to close before 100% reading progress */}
       {isCloseConfirmOpen && (

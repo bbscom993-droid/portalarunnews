@@ -5,13 +5,10 @@ import {
   Info, 
   Sparkles, 
   ShieldCheck, 
-  PhoneCall, 
   ChevronDown, 
   ChevronUp,
   X,
   BadgeCheck,
-  Sliders,
-  ArrowRight,
   MessageCircle
 } from 'lucide-react';
 import { AdSlot, SiteSettings } from '../types';
@@ -20,7 +17,6 @@ interface PermanentHeaderAdProps {
   slot?: AdSlot;
   siteSettings?: SiteSettings;
   onOpenAdvertisingModal?: () => void;
-  onNavigateToEditorial?: () => void;
   onTrackClick?: (slotId: string) => void;
 }
 
@@ -28,7 +24,6 @@ export const PermanentHeaderAd: React.FC<PermanentHeaderAdProps> = ({
   slot,
   siteSettings,
   onOpenAdvertisingModal,
-  onNavigateToEditorial,
   onTrackClick,
 }) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
@@ -66,23 +61,10 @@ export const PermanentHeaderAd: React.FC<PermanentHeaderAdProps> = ({
         {/* Top Mini Header Strip: Official Permanent Ad Badge & Quick Controls */}
         <div className="flex items-center justify-between gap-2 text-[10px] font-mono text-sky-200 pb-1.5 border-b border-sky-800/60 mb-2">
           <div className="flex items-center gap-2 flex-wrap">
-            {onNavigateToEditorial ? (
-              <button
-                type="button"
-                onClick={onNavigateToEditorial}
-                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-yellow-400 hover:bg-yellow-300 text-sky-950 font-black uppercase tracking-wider shadow-2xs cursor-pointer transition-all active:scale-95"
-                title="Kelola Ruang Iklan Header di Pengaturan Redaksi"
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-sky-950 animate-ping"></span>
-                <span>IKLAN PERMANEN HEADER</span>
-                <span className="text-[9px] bg-sky-950 text-yellow-300 px-1 py-0.2 rounded font-mono font-bold">REDAKSI &rarr;</span>
-              </button>
-            ) : (
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-yellow-400 text-sky-950 font-black uppercase tracking-wider shadow-2xs">
-                <span className="w-1.5 h-1.5 rounded-full bg-sky-950 animate-ping"></span>
-                IKLAN PERMANEN HEADER
-              </span>
-            )}
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-yellow-400 text-sky-950 font-black uppercase tracking-wider shadow-2xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-sky-950 animate-ping"></span>
+              IKLAN PERMANEN HEADER
+            </span>
             <span className="hidden sm:inline-flex items-center gap-1 text-sky-300 font-bold">
               <BadgeCheck className="w-3 h-3 text-yellow-400" />
               Sponsor Utama Resmi Portal
@@ -104,18 +86,7 @@ export const PermanentHeaderAd: React.FC<PermanentHeaderAdProps> = ({
               <span className="hidden sm:inline">Transparansi</span>
             </button>
 
-            {/* Direct to Editorial Settings button */}
-            {onNavigateToEditorial ? (
-              <button
-                type="button"
-                onClick={onNavigateToEditorial}
-                className="bg-yellow-400 hover:bg-yellow-300 text-sky-950 font-black text-[10px] px-2.5 py-0.5 rounded-md shadow-xs transition-all flex items-center gap-1 cursor-pointer active:scale-95"
-                title="Kelola slot iklan ini di Pengaturan Redaksi"
-              >
-                <Sliders className="w-2.5 h-2.5 text-sky-950" />
-                <span>Pengaturan Redaksi</span>
-              </button>
-            ) : onOpenAdvertisingModal ? (
+            {onOpenAdvertisingModal && (
               <button
                 type="button"
                 onClick={onOpenAdvertisingModal}
@@ -126,7 +97,7 @@ export const PermanentHeaderAd: React.FC<PermanentHeaderAdProps> = ({
                 <span className="hidden sm:inline">Sewa Slot Permanen</span>
                 <span className="sm:hidden">Sewa</span>
               </button>
-            ) : null}
+            )}
 
             {/* Expand / Minimize Toggle */}
             <button
@@ -163,11 +134,7 @@ export const PermanentHeaderAd: React.FC<PermanentHeaderAdProps> = ({
         {isExpanded ? (
           <div className="flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4 py-1.5 transition-all">
             {/* Banner Left: Image & Copy */}
-            <div 
-              onClick={onNavigateToEditorial}
-              className={`flex items-center gap-3 sm:gap-4 w-full md:w-auto ${onNavigateToEditorial ? 'cursor-pointer group/card' : ''}`}
-              title={onNavigateToEditorial ? 'Klik untuk kelola iklan di Pengaturan Redaksi' : undefined}
-            >
+            <div className="flex items-center gap-3 sm:gap-4 w-full md:w-auto">
               <div className="relative flex-shrink-0">
                 <img
                   src={effectiveBannerImage}

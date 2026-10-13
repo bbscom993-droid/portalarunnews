@@ -68,11 +68,8 @@ export const HeadlineHero: React.FC<HeadlineHeroProps> = ({
                 </span>
               </div>
 
-              {/* Action Buttons Top Right: Bookmark & Share */}
+              {/* Action Button Top Right: Bookmark Only */}
               <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
-                <div className="bg-sky-950/80 backdrop-blur-md rounded-xl p-0.5 shadow-md border border-white/10 flex items-center">
-                  <ArticleShareButton article={mainArticle} variant="badge" size="sm" placement="bottom" />
-                </div>
                 <button
                   id={`save-btn-${mainArticle.id}`}
                   onClick={(e) => onToggleSave(mainArticle, e)}

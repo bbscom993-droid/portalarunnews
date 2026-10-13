@@ -88,7 +88,7 @@ export const AdManagementView: React.FC<AdManagementViewProps> = ({
     subtitle: '',
     bannerImage: '',
     targetUrl: '',
-    ctaText: 'Kunjungi Mitra',
+    ctaText: 'Hubungi Redaksi',
     priceRate: 'Rp 2.500.000 / bln',
     dimensions: '1200 x 200 px',
     badgeText: 'Mitra Resmi',
@@ -1030,10 +1030,10 @@ export const AdManagementView: React.FC<AdManagementViewProps> = ({
                   </label>
                   <input
                     type="text"
-                    value={formData.ctaText || 'Kunjungi Mitra'}
+                    value={formData.ctaText || 'Hubungi Redaksi'}
                     onChange={(e) => setFormData({ ...formData, ctaText: e.target.value })}
                     className="w-full p-2.5 bg-sky-50 rounded-xl border border-sky-200 text-sky-950 focus:ring-2 focus:ring-sky-400"
-                    placeholder="cth: Kunjungi Mitra, Buka Tabungan, Hubungi Kami"
+                    placeholder="cth: Hubungi Redaksi, Buka Tabungan, Hubungi Kami"
                   />
                 </div>
               </div>
@@ -1279,7 +1279,7 @@ export const AdManagementView: React.FC<AdManagementViewProps> = ({
                   rel="noreferrer"
                   className="px-4 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-sky-950 font-black text-xs font-mono uppercase tracking-wider transition-all shadow-md flex items-center gap-1.5 whitespace-nowrap flex-shrink-0"
                 >
-                  <span>{previewSlot.ctaText || 'Kunjungi Mitra'}</span>
+                  <span>{previewSlot.ctaText || 'Hubungi Redaksi'}</span>
                   <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               </div>

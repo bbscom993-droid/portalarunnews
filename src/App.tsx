@@ -1084,7 +1084,6 @@ export default function App() {
         slot={topBillboardSlot}
         siteSettings={siteSettings}
         onOpenAdvertisingModal={() => setIsAdvertisingModalOpen(true)}
-        onNavigateToEditorial={navigateToEditorial}
         onTrackClick={handleTrackAdClick}
       />
 
@@ -1104,12 +1103,12 @@ export default function App() {
         <AdBanner 
           type="header" 
           slot={topBillboardSlot}
+          siteSettings={siteSettings}
           enablePlacements={enableAdPlacements}
           showTransparencyNotice={showAdTransparencyNotice}
           allowPublicRentButton={allowPublicRentButton}
           onTrackClick={handleTrackAdClick}
           onOpenAdvertisingModal={() => setIsAdvertisingModalOpen(true)}
-          onNavigateToEditorial={navigateToEditorial}
           dimensions="1200 x 200 px"
           price="Rp 2.500.000 / bln"
         />
@@ -1345,6 +1344,7 @@ export default function App() {
               <AdBanner
                 type="sidebar"
                 slot={sidebarSlot}
+                siteSettings={siteSettings}
                 enablePlacements={enableAdPlacements}
                 showTransparencyNotice={showAdTransparencyNotice}
                 allowPublicRentButton={allowPublicRentButton}
@@ -1363,6 +1363,7 @@ export default function App() {
             <AdBanner 
               type="inline"
               slot={inlineSlot}
+              siteSettings={siteSettings}
               enablePlacements={enableAdPlacements}
               showTransparencyNotice={showAdTransparencyNotice}
               allowPublicRentButton={allowPublicRentButton}

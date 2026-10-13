@@ -21,7 +21,8 @@ import {
   Train,
   AlertTriangle,
   Coffee,
-  Bookmark
+  Bookmark,
+  Sliders
 } from 'lucide-react';
 import { Category, SiteSettings } from '../types';
 import { ModernGraffitiLogo } from './ModernGraffitiLogo';
@@ -387,6 +388,23 @@ export const Footer: React.FC<FooterProps> = ({
                   </button>
                 </li>
               )}
+              {/* Pengaturan Admin */}
+              <li>
+                <a 
+                  href="https://portalarunews.com/#/admin"
+                  onClick={(e) => {
+                    if (onNavigateToEditorial) {
+                      e.preventDefault();
+                      onNavigateToEditorial();
+                    }
+                  }}
+                  className="hover:text-yellow-400 text-yellow-300 font-bold transition-colors text-left flex items-center gap-1.5 cursor-pointer font-mono"
+                  title="Akses Pengaturan Admin Portal (portalarunews.com/#/admin)"
+                >
+                  <Sliders className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0" />
+                  <span>Pengaturan Admin</span>
+                </a>
+              </li>
               {siteSettings?.moduleToggles?.showPedomanMediaSiber !== false && (
                 <li>
                   <button 
@@ -469,10 +487,25 @@ export const Footer: React.FC<FooterProps> = ({
           <div>
             © 2026 {siteSettings?.portalName || 'Arun News'}. Hak Cipta Dilindungi Undang-Undang Republik Indonesia.
           </div>
-          <div className="flex items-center gap-4 text-xs font-mono font-medium">
+          <div className="flex items-center gap-3 sm:gap-4 text-xs font-mono font-medium flex-wrap justify-center sm:justify-end">
             <span className="font-graffiti tracking-wider text-yellow-400 graffiti-tagline uppercase">Jembatan Informasi Nusantara</span>
             <span>•</span>
-            <span className="text-sky-300">Edisi Digital Nusantara</span>
+            <span className="text-sky-300">Edisi Digital</span>
+            <span>•</span>
+            <a 
+              href="https://portalarunews.com/#/admin"
+              onClick={(e) => {
+                if (onNavigateToEditorial) {
+                  e.preventDefault();
+                  onNavigateToEditorial();
+                }
+              }}
+              className="text-sky-300 hover:text-yellow-400 transition-colors flex items-center gap-1 font-bold"
+              title="portalarunews.com/#/admin"
+            >
+              <Sliders className="w-3 h-3 text-yellow-400" />
+              <span>Pengaturan Admin</span>
+            </a>
           </div>
         </div>
       </div>

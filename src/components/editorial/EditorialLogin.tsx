@@ -57,10 +57,12 @@ export const EditorialLogin: React.FC<EditorialLoginProps> = ({
     backgroundPattern: 'gradient',
   };
 
-  const redaksiLink = `${window.location.origin}${window.location.pathname}#/redaksi`;
+  const adminLink = typeof window !== 'undefined' && window.location.hostname.includes('portalarunews.com')
+    ? 'https://portalarunews.com/#/admin'
+    : `${window.location.origin}${window.location.pathname}#/admin`;
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(redaksiLink);
+    navigator.clipboard.writeText(adminLink);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
   };
@@ -84,9 +86,9 @@ export const EditorialLogin: React.FC<EditorialLoginProps> = ({
     setIsLoading(true);
 
     setTimeout(() => {
-      // Check Security PIN if required by editorial authorization settings
+      // Check Security PIN if required by admin authorization settings
       if (loginTheme.requireSecurityPin && securityPin.trim() !== (loginTheme.securityPinCode || '123456')) {
-        setErrorMsg('❌ Kode PIN Otorisasi Redaksi salah! Periksa PIN Keamanan di Pengaturan Redaksi (Default: 123456).');
+        setErrorMsg('❌ Kode PIN Otorisasi Staf salah! Periksa PIN Keamanan di Pengaturan Admin (Default: 123456).');
         setIsLoading(false);
         return;
       }
@@ -467,21 +469,21 @@ export const EditorialLogin: React.FC<EditorialLoginProps> = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-black text-yellow-300 uppercase tracking-wider font-mono">
-                      Tautan Khusus Meja Redaksi
+                      Tautan Khusus Pengaturan Admin
                     </span>
                     <span className="bg-slate-800 text-slate-200 text-[10px] px-2 py-0.2 rounded-full font-mono">
-                      Beda Link URL
+                      portalarunews.com/#/admin
                     </span>
                   </div>
                   <p className="text-xs text-slate-200 mt-0.5 font-medium">
-                    Akses langsung halaman redaksi ini kapan saja melalui tautan di bawah:
+                    Akses langsung halaman pengaturan admin portal ini kapan saja melalui tautan resmi di bawah:
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 bg-slate-950/80 px-3 py-1.5 rounded-xl border border-slate-700 w-full sm:w-auto">
-                <code className="text-[11px] text-yellow-300 font-mono truncate flex-1 sm:max-w-xs">
-                  {redaksiLink}
+                <code className="text-[11px] text-yellow-300 font-mono truncate flex-1 sm:max-w-xs font-bold">
+                  {adminLink}
                 </code>
                 <button
                   type="button"

@@ -109,6 +109,7 @@ import {
   DEFAULT_BUZZER_CONFIG, 
   AntiBuzzerConfig 
 } from '../../utils/antiBuzzerEngine';
+import { saveArticleToDB, deleteArticleFromDB } from '../../services/dbClient';
 
 interface EditorialDashboardProps {
   currentUser: EditorialUser;
@@ -542,13 +543,15 @@ export const EditorialDashboard: React.FC<EditorialDashboardProps> = ({
     showToast('Status penayangan di Box Redaksi berhasil diperbarui.');
   };
 
-  // Direct redaksi URL link
-  const redaksiLink = `${window.location.origin}${window.location.pathname}#/redaksi`;
+  // Direct admin URL link
+  const adminLink = typeof window !== 'undefined' && window.location.hostname.includes('portalarunews.com')
+    ? 'https://portalarunews.com/#/admin'
+    : `${window.location.origin}${window.location.pathname}#/admin`;
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(redaksiLink);
+    navigator.clipboard.writeText(adminLink);
     setCopiedLink(true);
-    showToast('Tautan Meja Redaksi berhasil disalin!');
+    showToast('Tautan Pengaturan Admin berhasil disalin (portalarunews.com/#/admin)!');
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
@@ -609,43 +612,92 @@ export const EditorialDashboard: React.FC<EditorialDashboardProps> = ({
 
   const handleSaveArticle = (savedArticle: NewsArticle) => {
     const exists = articles.some((a) => a.id === savedArticle.id);
+    let nextList: NewsArticle[];
     if (exists) {
-      setArticles((prev) => prev.map((a) => (a.id === savedArticle.id ? savedArticle : a)));
+      nextList = articles.map((a) => (a.id === savedArticle.id ? savedArticle : a));
       showToast(`Warta "${savedArticle.title.slice(0, 25)}..." berhasil diperbarui.`);
     } else {
-      setArticles((prev) => [savedArticle, ...prev]);
+      nextList = [savedArticle, ...articles];
       showToast(`Warta baru "${savedArticle.title.slice(0, 25)}..." berhasil diterbitkan!`);
     }
+
+    // 1. Immediately update in-memory state
+    setArticles(nextList);
+
+    // 2. Immediately write to localStorage so refresh never loses the news
+    try {
+      localStorage.setItem('wartakini_articles', JSON.stringify(nextList));
+    } catch (e) {
+      console.warn('LocalStorage save error (quota exceeded?):', e);
+    }
+
+    // 3. Immediately persist to Firebase Firestore DB in background
+    saveArticleToDB(savedArticle).catch((err) => {
+      console.warn('Firestore article save error:', err);
+    });
   };
 
   const handleDeleteArticle = (id: string, title: string) => {
     if (window.confirm(`Hapus artikel warta "${title}" dari portal berita?`)) {
-      setArticles((prev) => prev.filter((a) => a.id !== id));
+      const nextList = articles.filter((a) => a.id !== id);
+      setArticles(nextList);
+      try {
+        localStorage.setItem('wartakini_articles', JSON.stringify(nextList));
+      } catch (e) {
+        console.warn('LocalStorage delete error:', e);
+      }
+      deleteArticleFromDB(id).catch((err) => {
+        console.warn('Firestore article delete error:', err);
+      });
       showToast('Warta berhasil dihapus.');
     }
   };
 
   const handleSetHeadline = (articleId: string) => {
-    setArticles((prev) =>
-      prev.map((a) => ({
-        ...a,
-        isHeadline: a.id === articleId,
-      }))
-    );
+    const nextList = articles.map((a) => {
+      const isHead = a.id === articleId;
+      const updated = { ...a, isHeadline: isHead };
+      if (isHead || a.isHeadline) {
+        saveArticleToDB(updated).catch(console.warn);
+      }
+      return updated;
+    });
+    setArticles(nextList);
+    try {
+      localStorage.setItem('wartakini_articles', JSON.stringify(nextList));
+    } catch (e) {}
     showToast('Headline Utama Berita berhasil diperbarui.');
   };
 
   const handleToggleBreaking = (articleId: string) => {
-    setArticles((prev) =>
-      prev.map((a) => (a.id === articleId ? { ...a, isBreaking: !a.isBreaking } : a))
-    );
+    const nextList = articles.map((a) => {
+      if (a.id === articleId) {
+        const updated = { ...a, isBreaking: !a.isBreaking };
+        saveArticleToDB(updated).catch(console.warn);
+        return updated;
+      }
+      return a;
+    });
+    setArticles(nextList);
+    try {
+      localStorage.setItem('wartakini_articles', JSON.stringify(nextList));
+    } catch (e) {}
     showToast('Status Breaking News berhasil diperbarui.');
   };
 
   const handleToggleEditorPick = (articleId: string) => {
-    setArticles((prev) =>
-      prev.map((a) => (a.id === articleId ? { ...a, isEditorPick: !a.isEditorPick } : a))
-    );
+    const nextList = articles.map((a) => {
+      if (a.id === articleId) {
+        const updated = { ...a, isEditorPick: !a.isEditorPick };
+        saveArticleToDB(updated).catch(console.warn);
+        return updated;
+      }
+      return a;
+    });
+    setArticles(nextList);
+    try {
+      localStorage.setItem('wartakini_articles', JSON.stringify(nextList));
+    } catch (e) {}
     showToast("Status Pilihan Editor berhasil diperbarui.");
   };
 
@@ -771,16 +823,16 @@ export const EditorialDashboard: React.FC<EditorialDashboardProps> = ({
             </div>
           </div>
 
-          {/* Center: Redaksi Direct URL Link Notice */}
+          {/* Center: Admin Direct URL Link Notice */}
           <div className="hidden lg:flex items-center gap-2 bg-sky-900/80 px-3 py-1 rounded-xl border border-sky-700">
-            <span className="text-[10px] font-mono text-yellow-300">Tautan Redaksi:</span>
+            <span className="text-[10px] font-mono text-yellow-300">Tautan Admin:</span>
             <code className="text-[11px] text-sky-100 font-mono">
-              #/redaksi
+              portalarunews.com/#/admin
             </code>
             <button
               onClick={handleCopyLink}
               className="flex items-center gap-1 px-2 py-0.5 bg-yellow-400 hover:bg-yellow-300 text-sky-950 font-bold text-[10px] rounded transition-colors"
-              title="Salin Tautan Redaksi"
+              title="Salin Tautan Pengaturan Admin (portalarunews.com/#/admin)"
             >
               {copiedLink ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
               <span>{copiedLink ? 'Tersalin' : 'Salin Link'}</span>
@@ -4206,7 +4258,7 @@ export const EditorialDashboard: React.FC<EditorialDashboardProps> = ({
                         </span>
                       </div>
                       <p className="text-xs text-sky-200 mt-0.5 font-medium">
-                        Ubah tata letak, skema warna, font tipografi, judul, serta elemen visual pada halaman login Meja Redaksi (<code className="text-yellow-300 font-mono">#/redaksi</code>)
+                        Ubah tata letak, skema warna, font tipografi, judul, serta elemen visual pada halaman login Pengaturan Admin (<code className="text-yellow-300 font-mono">#/admin</code>)
                       </p>
                     </div>
                   </div>
@@ -4214,7 +4266,7 @@ export const EditorialDashboard: React.FC<EditorialDashboardProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      const loginUrl = `${window.location.origin}${window.location.pathname}#/redaksi`;
+                      const loginUrl = `${window.location.origin}${window.location.pathname}#/admin`;
                       window.open(loginUrl, '_blank');
                     }}
                     className="px-3.5 py-2 bg-yellow-400 hover:bg-yellow-300 active:scale-95 text-sky-950 text-xs font-black rounded-xl transition-all flex items-center gap-1.5 shadow-md flex-shrink-0"
@@ -4705,7 +4757,7 @@ export const EditorialDashboard: React.FC<EditorialDashboardProps> = ({
                         <button
                           type="button"
                           onClick={() => {
-                            const loginUrl = `${window.location.origin}${window.location.pathname}#/redaksi`;
+                            const loginUrl = `${window.location.origin}${window.location.pathname}#/admin`;
                             window.open(loginUrl, '_blank');
                           }}
                           className="px-3 py-1.5 bg-yellow-400 hover:bg-yellow-300 text-sky-950 font-bold rounded-lg transition-colors text-[11px] font-mono flex items-center gap-1"

@@ -192,8 +192,8 @@ export default function App() {
   }, [currentHash]);
 
   const navigateToEditorial = () => {
-    window.location.hash = '#/redaksi';
-    setCurrentHash('#/redaksi');
+    window.location.hash = '#/admin';
+    setCurrentHash('#/admin');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -224,11 +224,17 @@ export default function App() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && !parsed.some(a => a.category === 'akpersi')) {
-          return INITIAL_ARTICLES;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Keep all saved and newly uploaded articles
+          const hasAkpersi = parsed.some(a => a.category === 'akpersi');
+          if (!hasAkpersi) {
+            const akpersiArticles = INITIAL_ARTICLES.filter(a => a.category === 'akpersi');
+            return [...parsed, ...akpersiArticles];
+          }
+          return parsed;
         }
-        return parsed;
       } catch (e) {
+        console.warn('Failed to parse cached articles, using defaults:', e);
         return INITIAL_ARTICLES;
       }
     }
@@ -463,13 +469,51 @@ export default function App() {
         setDbState({ status: 'connected', info: health.database });
         await seedCategoriesToDB(CATEGORIES);
         const dbArticles = await fetchArticlesFromDB();
-        if (dbArticles && dbArticles.length > 0) {
-          setArticles(dbArticles);
-        } else {
-          for (const art of INITIAL_ARTICLES) {
-            await saveArticleToDB(art);
+
+        // Read local storage to ensure newly uploaded or modified articles are never lost
+        let localArticles: NewsArticle[] = [];
+        try {
+          const raw = localStorage.getItem('wartakini_articles');
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) localArticles = parsed;
           }
-          setArticles(INITIAL_ARTICLES);
+        } catch (e) {
+          console.warn('Error reading local articles:', e);
+        }
+
+        if (dbArticles && dbArticles.length > 0) {
+          const dbIdSet = new Set(dbArticles.map((a) => a.id));
+          // Identify articles present locally that have not yet reached Firestore
+          const pendingUploads = localArticles.filter((a) => !dbIdSet.has(a.id));
+
+          // Asynchronously push any pending local articles to Firestore
+          if (pendingUploads.length > 0) {
+            for (const art of pendingUploads) {
+              saveArticleToDB(art).catch(console.warn);
+            }
+          }
+
+          // Combine with local pending articles on top, followed by database articles
+          const combined = [...pendingUploads, ...dbArticles];
+          setArticles(combined);
+          try {
+            localStorage.setItem('wartakini_articles', JSON.stringify(combined));
+          } catch (e) {
+            console.warn('LocalStorage save error:', e);
+          }
+        } else {
+          // If Firestore is empty, seed with current local articles (including uploads) or INITIAL_ARTICLES
+          const toSeed = localArticles.length > 0 ? localArticles : INITIAL_ARTICLES;
+          for (const art of toSeed) {
+            await saveArticleToDB(art).catch(console.warn);
+          }
+          setArticles(toSeed);
+          try {
+            localStorage.setItem('wartakini_articles', JSON.stringify(toSeed));
+          } catch (e) {
+            console.warn('LocalStorage save error:', e);
+          }
         }
         showToast('🟢 Terhubung ke Basis Data Firebase Firestore!');
       } else {
@@ -485,7 +529,12 @@ export default function App() {
     connectFirestoreDB();
     const unsub = subscribeArticlesFromDB((updated) => {
       if (updated && updated.length > 0) {
-        setArticles(updated);
+        setArticles((prev) => {
+          const dbIdSet = new Set(updated.map((a) => a.id));
+          // Keep any newly added local articles that aren't yet in the remote snapshot
+          const localOnly = prev.filter((a) => !dbIdSet.has(a.id));
+          return [...localOnly, ...updated];
+        });
         setDbState({ status: 'connected', info: 'Firebase Firestore (Realtime Sync)' });
       }
     });
@@ -495,7 +544,13 @@ export default function App() {
   }, []);
 
   // Sync to localStorage
-  useEffect(() => { localStorage.setItem('wartakini_articles', JSON.stringify(articles)); }, [articles]);
+  useEffect(() => {
+    try {
+      localStorage.setItem('wartakini_articles', JSON.stringify(articles));
+    } catch (e) {
+      console.warn('Error saving articles to localStorage (quota exceeded?):', e);
+    }
+  }, [articles]);
   useEffect(() => { localStorage.setItem('wartakini_categories', JSON.stringify(categories)); }, [categories]);
   useEffect(() => { localStorage.setItem('wartakini_weather', JSON.stringify(weatherCities)); }, [weatherCities]);
   useEffect(() => { localStorage.setItem('wartakini_trending', JSON.stringify(trendingTopics)); }, [trendingTopics]);
@@ -733,7 +788,14 @@ export default function App() {
   };
 
   const handleCitizenSubmit = (newArticle: NewsArticle) => {
-    setArticles((prev) => [newArticle, ...prev]);
+    const nextList = [newArticle, ...articles];
+    setArticles(nextList);
+    try {
+      localStorage.setItem('wartakini_articles', JSON.stringify(nextList));
+    } catch (e) {
+      console.warn('LocalStorage save error:', e);
+    }
+    saveArticleToDB(newArticle).catch(console.warn);
     showToast('Warta warga berhasil diterbitkan ke feed berita!');
   };
 
@@ -1077,6 +1139,7 @@ export default function App() {
         onOpenCitizenModal={() => setIsCitizenModalOpen(true)}
         onOpenSawerKopi={() => setIsSawerKopiOpen(true)}
         siteSettings={siteSettings}
+        onNavigateToEditorial={navigateToEditorial}
       />
 
       {/* 2.1 IKLAN PERMANEN HEADER PORTAL (Permanent Billboard Banner Ad) */}

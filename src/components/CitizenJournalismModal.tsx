@@ -21,6 +21,7 @@ import {
   AlertCircle 
 } from 'lucide-react';
 import { Category, NewsArticle } from '../types';
+import { compressImageFile } from '../utils/imageCompressor';
 
 interface CitizenJournalismModalProps {
   isOpen: boolean;
@@ -146,7 +147,7 @@ export const CitizenJournalismModal: React.FC<CitizenJournalismModalProps> = ({
   if (!isOpen) return null;
 
   // Handle File Uploads (Drag & Drop or Manual Selection)
-  const handleProcessFiles = (filesList: FileList | File[]) => {
+  const handleProcessFiles = async (filesList: FileList | File[]) => {
     const newItems: UploadedFileItem[] = [];
     const filesArray = Array.from(filesList);
 
@@ -165,14 +166,23 @@ export const CitizenJournalismModal: React.FC<CitizenJournalismModalProps> = ({
       }
 
       const sizeInMB = (file.size / (1024 * 1024)).toFixed(1);
-      const fileUrl = URL.createObjectURL(file);
+      let fileUrl = '';
+      if (isImage) {
+        try {
+          fileUrl = await compressImageFile(file, 1200, 1200, 0.82);
+        } catch {
+          fileUrl = URL.createObjectURL(file);
+        }
+      } else {
+        fileUrl = URL.createObjectURL(file);
+      }
 
       newItems.push({
         id: `file-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
         name: file.name,
         size: `${sizeInMB} MB`,
         type: isVideo ? 'video' : 'image',
-        url: fileUrl
+        url: fileUrl || URL.createObjectURL(file)
       });
     }
 

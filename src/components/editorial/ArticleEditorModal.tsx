@@ -35,6 +35,7 @@ import { Category, NewsArticle } from '../../types';
 import { WordToolbar } from './WordToolbar';
 import { renderRichParagraph } from '../../utils/textFormatter';
 import { SeoHeadlineStudio } from './SeoHeadlineStudio';
+import { compressImageFile } from '../../utils/imageCompressor';
 
 interface ArticleEditorModalProps {
   isOpen: boolean;
@@ -644,16 +645,19 @@ export const ArticleEditorModal: React.FC<ArticleEditorModalProps> = ({
                     type="file"
                     accept="image/*"
                     className="hidden"
-                    onChange={(e) => {
+                    onChange={async (e) => {
                       const file = e.target.files?.[0];
                       if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (evt) => {
-                          if (evt.target?.result) {
-                            setAuthorAvatar(evt.target.result as string);
-                          }
-                        };
-                        reader.readAsDataURL(file);
+                        try {
+                          const compressed = await compressImageFile(file, 300, 300, 0.85);
+                          if (compressed) setAuthorAvatar(compressed);
+                        } catch {
+                          const reader = new FileReader();
+                          reader.onload = (evt) => {
+                            if (evt.target?.result) setAuthorAvatar(evt.target.result as string);
+                          };
+                          reader.readAsDataURL(file);
+                        }
                       }
                     }}
                   />
@@ -908,16 +912,21 @@ export const ArticleEditorModal: React.FC<ArticleEditorModalProps> = ({
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  onChange={(e) => {
+                  onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (file) {
-                      const reader = new FileReader();
-                      reader.onload = (evt) => {
-                        if (evt.target?.result) {
-                          setImageUrl(evt.target.result as string);
-                        }
-                      };
-                      reader.readAsDataURL(file);
+                      try {
+                        const compressed = await compressImageFile(file, 1200, 1200, 0.82);
+                        if (compressed) setImageUrl(compressed);
+                      } catch {
+                        const reader = new FileReader();
+                        reader.onload = (evt) => {
+                          if (evt.target?.result) {
+                            setImageUrl(evt.target.result as string);
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                      }
                     }
                   }}
                 />

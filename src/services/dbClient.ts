@@ -164,12 +164,28 @@ export function subscribeArticlesFromDB(onUpdate: (articles: NewsArticle[]) => v
   }
 }
 
+export function sanitizeForFirestore(obj: any): any {
+  if (obj === null || obj === undefined) return null;
+  if (Array.isArray(obj)) return obj.map(sanitizeForFirestore);
+  if (typeof obj === 'object') {
+    const res: Record<string, any> = {};
+    for (const [key, val] of Object.entries(obj)) {
+      if (val !== undefined) {
+        res[key] = sanitizeForFirestore(val);
+      }
+    }
+    return res;
+  }
+  return obj;
+}
+
 export async function saveArticleToDB(article: NewsArticle): Promise<boolean> {
   try {
-    await setDoc(doc(db, 'articles', article.id), {
+    const cleaned = sanitizeForFirestore({
       ...article,
       updatedAt: new Date().toISOString(),
-    }, { merge: true });
+    });
+    await setDoc(doc(db, 'articles', article.id), cleaned, { merge: true });
     return true;
   } catch (err) {
     console.warn('Failed to save article to Firestore:', err);

@@ -509,10 +509,10 @@ export const PortalThemeSettingsView: React.FC<PortalThemeSettingsViewProps> = (
           />
           <label htmlFor="sync-login-checkbox" className="cursor-pointer">
             <p className="text-xs font-black uppercase text-sky-950 font-mono">
-              Sinkronkan Palet Warna ke Halaman Login Redaksi Juga
+              Sinkronkan Palet Warna ke Halaman Login Pengaturan Admin
             </p>
             <p className="text-[11px] text-slate-600 mt-0.5 font-medium">
-              Secara otomatis perbarui skema warna halaman otentikasi login Meja Redaksi (<code className="text-sky-900 font-mono font-bold">#/redaksi</code>) agar selaras dengan portal publik.
+              Secara otomatis perbarui skema warna halaman otentikasi login Pengaturan Admin (<code className="text-sky-900 font-mono font-bold">portalarunews.com/#/admin</code>) agar selaras dengan portal publik.
             </p>
           </label>
         </div>

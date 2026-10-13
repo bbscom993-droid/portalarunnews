@@ -25,7 +25,8 @@ import {
   Tag,
   Megaphone,
   Coffee,
-  ChevronDown
+  ChevronDown,
+  Sliders
 } from 'lucide-react';
 import { Category, SiteSettings } from '../types';
 import { ModernGraffitiLogo } from './ModernGraffitiLogo';
@@ -43,6 +44,7 @@ interface HeaderProps {
   siteSettings?: SiteSettings;
   isCompactMode?: boolean;
   onToggleCompactMode?: () => void;
+  onNavigateToEditorial?: () => void;
 }
 
 const getCategoryIcon = (iconName: string, className: string) => {
@@ -78,6 +80,7 @@ export const Header: React.FC<HeaderProps> = ({
   siteSettings,
   isCompactMode = false,
   onToggleCompactMode,
+  onNavigateToEditorial,
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -362,6 +365,21 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <CheckCircle2 className="w-4 h-4 text-yellow-400" />
                 <span>Jajak Pendapat</span>
+              </a>
+              <a
+                href="https://portalarunews.com/#/admin"
+                onClick={(e) => {
+                  setIsMobileMenuOpen(false);
+                  if (onNavigateToEditorial) {
+                    e.preventDefault();
+                    onNavigateToEditorial();
+                  }
+                }}
+                className="flex items-center gap-2 p-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 border border-yellow-500 text-xs font-black text-sky-950 shadow-xs cursor-pointer"
+                title="portalarunews.com/#/admin"
+              >
+                <Sliders className="w-4 h-4 text-sky-950" />
+                <span>Pengaturan Admin</span>
               </a>
             </div>
           </div>
